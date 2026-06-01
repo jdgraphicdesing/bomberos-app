@@ -846,29 +846,6 @@
     window.scrollTo({top: 0, behavior: 'smooth'});
   };
 
-  function agregarBomberoItem(container, bombero, autoSelect) {
-    const initials = bombero.nombre.split(' ').map(w => w[0]||'').join('').substring(0,2).toUpperCase();
-    const item = document.createElement('div');
-    item.className = 'bombero-item' + (autoSelect ? ' selected' : '');
-    item.innerHTML =
-      '<div class="bombero-avatar">' + initials + '</div>' +
-      '<div><div class="bombero-nombre">' + bombero.nombre + '</div>' +
-      '<div class="bombero-rol">Bombero activo</div></div>' +
-      '<span class="bombero-check">✅</span>';
-    item.onclick = () => {
-      item.classList.toggle('selected');
-      actualizarEquipoSeleccionado();
-    };
-    container.appendChild(item);
-    if (autoSelect) actualizarEquipoSeleccionado();
-  }
-
-  function actualizarEquipoSeleccionado() {
-    const selected = document.querySelectorAll('.bombero-item.selected .bombero-nombre');
-    const nombres = Array.from(selected).map(el => el.textContent);
-    document.getElementById('r-equipo').value = nombres.join(', ');
-  }
-
   window._pedirCierreInterno = async (id, ubicacion, tipo) => {
     alertaActual = {id, ubicacion, tipo};
     horaDespacho = new Date();
@@ -880,15 +857,31 @@
     const listEl = document.getElementById('bomberos-list');
     listEl.innerHTML = '';
 
-    // Mostrar usuario actual primero
+    // Mostrar usuario actual
     const user = auth.currentUser;
     if (user) {
       const partes = user.email.split('@')[0].split(/[._-]/);
       const nombre = partes.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
-      agregarBomberoItem(listEl, {nombre, email: user.email}, true);
+      
+      // Crear item directamente sin función externa
+      const item = document.createElement('div');
+      item.className = 'bombero-item selected';
+      item.innerHTML =
+        '<div class="bombero-avatar">' + nombre.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase() + '</div>' +
+        '<div><div class="bombero-nombre">' + nombre + '</div>' +
+        '<div class="bombero-rol">Bombero activo</div></div>' +
+        '<span class="bombero-check">✅</span>';
+      item.onclick = () => {
+        item.classList.toggle('selected');
+        // Actualizar campo equipo
+        const sel = document.querySelectorAll('.bombero-item.selected .bombero-nombre');
+        document.getElementById('r-equipo').value = Array.from(sel).map(el=>el.textContent).join(', ');
+      };
+      listEl.appendChild(item);
+      document.getElementById('r-equipo').value = nombre;
     }
 
-    // Intentar cargar otros bomberos de Firestore
+    // Cargar otros bomberos de Firestore
     try {
       const snap = await getDocs(collection(db, 'bomberos_servicio'));
       const vistos = new Set();
@@ -897,11 +890,23 @@
         const data = d.data();
         if (!vistos.has(data.email) && data.nombre) {
           vistos.add(data.email);
-          agregarBomberoItem(listEl, data, false);
+          const item2 = document.createElement('div');
+          item2.className = 'bombero-item';
+          item2.innerHTML =
+            '<div class="bombero-avatar">' + data.nombre.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase() + '</div>' +
+            '<div><div class="bombero-nombre">' + data.nombre + '</div>' +
+            '<div class="bombero-rol">Bombero activo</div></div>' +
+            '<span class="bombero-check">✅</span>';
+          item2.onclick = () => {
+            item2.classList.toggle('selected');
+            const sel = document.querySelectorAll('.bombero-item.selected .bombero-nombre');
+            document.getElementById('r-equipo').value = Array.from(sel).map(el=>el.textContent).join(', ');
+          };
+          listEl.appendChild(item2);
         }
       });
     } catch(e) {
-      console.log('Solo usuario actual disponible');
+      console.log('Solo usuario actual');
     }
 
     document.getElementById('overlay-reporte').classList.add('show');
