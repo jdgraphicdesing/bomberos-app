@@ -1336,38 +1336,11 @@
   window.sonarAlertaGlobal = function() {
     if (!sonidoActivado) return;
     try {
-      // Vibración patrón de emergencia
       if (navigator.vibrate) navigator.vibrate([400,100,400,100,400,100,800,200,800]);
-
       inicializarAudio();
       if (audioSirena) {
         audioSirena.currentTime = 0;
-        audioSirena.play().catch(e => {
-          console.log('Audio bloqueado por navegador:', e);
-          // Fallback: intentar con AudioContext
-          try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            ctx.resume();
-            const osc = ctx.createOscillator();
-            const lfo = ctx.createOscillator();
-            const lfoGain = ctx.createGain();
-            const masterGain = ctx.createGain();
-            osc.type = 'sawtooth';
-            lfo.type = 'sine';
-            lfo.frequency.value = 1.2;
-            lfoGain.gain.value = 300;
-            lfo.connect(lfoGain);
-            lfoGain.connect(osc.frequency);
-            osc.connect(masterGain);
-            masterGain.connect(ctx.destination);
-            osc.frequency.value = 800;
-            masterGain.gain.setValueAtTime(0.5, ctx.currentTime);
-            masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3);
-            osc.start(); lfo.start();
-            osc.stop(ctx.currentTime + 3);
-            lfo.stop(ctx.currentTime + 3);
-          } catch(e2) { console.error(e2); }
-        });
+        audioSirena.play().catch(() => {});
       }
     } catch(e) {
       console.error('Error sonido:', e);
