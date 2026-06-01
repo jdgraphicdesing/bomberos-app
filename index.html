@@ -846,6 +846,29 @@
     window.scrollTo({top: 0, behavior: 'smooth'});
   };
 
+  function agregarBomberoItem(container, bombero, autoSelect) {
+    const initials = bombero.nombre.split(' ').map(w => w[0]||'').join('').substring(0,2).toUpperCase();
+    const item = document.createElement('div');
+    item.className = 'bombero-item' + (autoSelect ? ' selected' : '');
+    item.innerHTML =
+      '<div class="bombero-avatar">' + initials + '</div>' +
+      '<div><div class="bombero-nombre">' + bombero.nombre + '</div>' +
+      '<div class="bombero-rol">Bombero activo</div></div>' +
+      '<span class="bombero-check">✅</span>';
+    item.onclick = () => {
+      item.classList.toggle('selected');
+      actualizarEquipoSeleccionado();
+    };
+    container.appendChild(item);
+    if (autoSelect) actualizarEquipoSeleccionado();
+  }
+
+  function actualizarEquipoSeleccionado() {
+    const selected = document.querySelectorAll('.bombero-item.selected .bombero-nombre');
+    const nombres = Array.from(selected).map(el => el.textContent);
+    document.getElementById('r-equipo').value = nombres.join(', ');
+  }
+
   window._pedirCierreInterno = async (id, ubicacion, tipo) => {
     alertaActual = {id, ubicacion, tipo};
     horaDespacho = new Date();
