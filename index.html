@@ -796,6 +796,10 @@
       document.getElementById('tab-bar-bombero').style.display='block';
       switchTabAuth('bombero',document.getElementById('tab-bombero-btn'));
       mostrarToast('✅ Bienvenido al panel', 'ok');
+      // Pedir permiso de notificaciones al hacer login
+      if ('Notification' in window && Notification.permission === 'default') {
+        setTimeout(() => Notification.requestPermission(), 1500);
+      }
     } catch(e) {
       let msg = '❌ Correo o contraseña incorrectos';
       if (e.code === 'auth/user-not-found') msg = '❌ Usuario no encontrado';
@@ -1144,7 +1148,7 @@
     setTimeout(pedirPermisoNotificaciones, 2000);
   });
 
-  // Sirena de bombero real
+  // Sirena real de bomberos con múltiples capas
   window.sonarAlertaGlobal = function() {
     if (!sonidoActivado) return;
     try {
@@ -1152,37 +1156,61 @@
       ctx.resume();
 
       // Vibración patrón de emergencia
-      if (navigator.vibrate) navigator.vibrate([300,100,300,100,300,100,600,200,600]);
+      if (navigator.vibrate) navigator.vibrate([400,100,400,100,400,100,800,200,800]);
 
-      function sirenaTono(freqInicio, freqFin, tInicio, duracion, vol) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        const dist = ctx.createWaveShaper();
+      function crearCicloSirena(tInicio) {
+        // Capa 1: oscilador principal tipo diente de sierra (cuerpo de la sirena)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sawtooth';
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
 
-        // Forma de onda que suena más a sirena
-        osc.type = 'sawtooth';
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+        // Capa 2: oscilador secundario para añadir cuerpo
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'square';
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
 
-        // Barrido de frecuencia (efecto doppler de sirena)
-        osc.frequency.setValueAtTime(freqInicio, ctx.currentTime + tInicio);
-        osc.frequency.linearRampToValueAtTime(freqFin, ctx.currentTime + tInicio + duracion * 0.5);
-        osc.frequency.linearRampToValueAtTime(freqInicio, ctx.currentTime + tInicio + duracion);
+        // Modulador LFO para el efecto wail (oscilación de sirena)
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+        lfo.type = 'sine';
+        lfo.frequency.value = 0.8; // velocidad de la sirena
+        lfoGain.gain.value = 280;  // amplitud del barrido de frecuencia
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc1.frequency);
+        lfoGain.connect(osc2.frequency);
 
-        gain.gain.setValueAtTime(0, ctx.currentTime + tInicio);
-        gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + tInicio + 0.05);
-        gain.gain.setValueAtTime(vol, ctx.currentTime + tInicio + duracion - 0.05);
-        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + tInicio + duracion);
+        // Frecuencia base de la sirena
+        osc1.frequency.setValueAtTime(720, ctx.currentTime + tInicio);
+        osc2.frequency.setValueAtTime(360, ctx.currentTime + tInicio);
 
-        osc.start(ctx.currentTime + tInicio);
-        osc.stop(ctx.currentTime + tInicio + duracion + 0.1);
+        // Envolvente de volumen
+        gain1.gain.setValueAtTime(0, ctx.currentTime + tInicio);
+        gain1.gain.linearRampToValueAtTime(0.4, ctx.currentTime + tInicio + 0.1);
+        gain1.gain.setValueAtTime(0.4, ctx.currentTime + tInicio + 1.4);
+        gain1.gain.linearRampToValueAtTime(0, ctx.currentTime + tInicio + 1.5);
+
+        gain2.gain.setValueAtTime(0, ctx.currentTime + tInicio);
+        gain2.gain.linearRampToValueAtTime(0.15, ctx.currentTime + tInicio + 0.1);
+        gain2.gain.setValueAtTime(0.15, ctx.currentTime + tInicio + 1.4);
+        gain2.gain.linearRampToValueAtTime(0, ctx.currentTime + tInicio + 1.5);
+
+        lfo.start(ctx.currentTime + tInicio);
+        osc1.start(ctx.currentTime + tInicio);
+        osc2.start(ctx.currentTime + tInicio);
+
+        lfo.stop(ctx.currentTime + tInicio + 1.6);
+        osc1.stop(ctx.currentTime + tInicio + 1.6);
+        osc2.stop(ctx.currentTime + tInicio + 1.6);
       }
 
-      // Patrón wail (aullido) de sirena americana: sube-baja 4 veces
-      const ciclo = 0.7;
-      for (let i = 0; i < 4; i++) {
-        sirenaTono(600, 1200, i * ciclo, ciclo, 0.5);
-      }
+      // 3 ciclos de sirena
+      crearCicloSirena(0.0);
+      crearCicloSirena(1.7);
+      crearCicloSirena(3.4);
 
     } catch(e) {
       console.error('Error sonido:', e);
