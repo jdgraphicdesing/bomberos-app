@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Bomberos Haina</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --red: #D32F2F; --red2: #B71C1C; --red3: #FF5252; --red-light: rgba(211,47,47,0.15);
+    --navy: #0D1B2A; --navy2: #1B2A3B; --navy3: #1E3A5F;
+    --text: #FFFFFF; --muted: #B0BEC5; --border: rgba(255,255,255,0.1);
+    --green: #00E676; --amber: #FFD600; --orange: #FF6D00;
+    --blue-btn: #0D47A1; --blue-btn2: #1565C0;
+  }
+  body { background: linear-gradient(160deg, #B71C1C 0%, #7B0000 40%, #0D1B2A 100%); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+
+  /* TABS */
+  .tab-bar { width: 100%; max-width: 480px; display: flex; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); padding: 6px; gap: 6px; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .tab-btn { flex: 1; border: none; border-radius: 10px; padding: 11px 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.2s; background: transparent; color: rgba(255,255,255,0.5); font-family: 'Inter', sans-serif; }
+  .tab-btn.active { background: var(--red); color: #fff; font-weight: 600; box-shadow: 0 4px 15px rgba(211,47,47,0.5); }
+  .screen { display: none; width: 100%; max-width: 480px; }
+  .screen.active { display: block; }
+
+  /* HEADER */
+  .app-header { padding: 24px 18px 18px; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .logo-row { display: flex; align-items: center; gap: 12px; }
+  .logo-box { width: 52px; height: 52px; background: linear-gradient(145deg, #FF5252, #B71C1C); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 8px 20px rgba(183,28,28,0.6), inset 0 1px 0 rgba(255,255,255,0.2); }
+  .logo-name { color: #fff; font-size: 18px; font-weight: 700; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.04em; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+  .logo-sub { color: rgba(255,255,255,0.7); font-size: 11px; margin-top: 1px; }
+  .online-badge { background: rgba(0,230,118,0.2); border-radius: 99px; padding: 5px 12px; border: 1px solid rgba(0,230,118,0.4); display: flex; align-items: center; gap: 6px; }
+  .online-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pls 1.5s infinite; box-shadow: 0 0 8px var(--green); }
+  @keyframes pls { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+  .online-badge span { font-size: 11px; color: var(--green); font-weight: 500; }
+  .header-msg { color: rgba(255,255,255,0.9); font-size: 15px; font-weight: 500; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .header-msg strong { color: #fff; font-size: 17px; display: block; margin-bottom: 2px; }
+
+  /* STEPS */
+  .steps-bar { display: flex; align-items: center; padding: 12px 18px 0; }
+  .step { display: flex; flex-direction: column; align-items: center; flex: 1; }
+  .step-circle { width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); transition: all 0.3s; }
+  .step-circle.active { border-color: #fff; background: var(--red); color: #fff; box-shadow: 0 0 15px rgba(211,47,47,0.6); }
+  .step-circle.done { border-color: var(--green); background: var(--green); color: #0D1B2A; }
+  .step-label { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+  .step-line { flex: 1; height: 2px; background: rgba(255,255,255,0.15); margin-top: -14px; }
+  .step-line.done { background: var(--green); }
+
+  .body { padding: 16px; }
+  .sec-lbl { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 12px; }
+
+  /* ── BOTONES 3D DE INCIDENTE ── */
+  .inc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+
+  .inc-btn {
+    border: none; border-radius: 18px; padding: 20px 10px 16px; text-align: center;
+    cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden;
+  }
+  .inc-btn::before { content:''; position:absolute; inset:0; border-radius:18px; background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 50%); pointer-events:none; }
+  .inc-btn:active { transform: scale(0.95) translateY(3px); }
+
+  /* Incendio — Naranja ardiente */
+  .inc-btn.fire-btn {
+    background: linear-gradient(145deg, #FF8F00, #E65100);
+    box-shadow: 0 8px 0 #BF360C, 0 10px 20px rgba(230,81,0,0.5);
+  }
+  .inc-btn.fire-btn.sel {
+    box-shadow: 0 4px 0 #BF360C, 0 6px 20px rgba(230,81,0,0.6), 0 0 0 3px #FFD600;
+    transform: translateY(2px);
+  }
+  /* Accidente — Rojo carmesí */
+  .inc-btn.acc-btn {
+    background: linear-gradient(145deg, #F44336, #B71C1C);
+    box-shadow: 0 8px 0 #7F0000, 0 10px 20px rgba(183,28,28,0.5);
+  }
+  .inc-btn.acc-btn.sel {
+    box-shadow: 0 4px 0 #7F0000, 0 6px 20px rgba(183,28,28,0.6), 0 0 0 3px #FFD600;
+    transform: translateY(2px);
+  }
+  /* Rescate — Azul marino */
+  .inc-btn.resc-btn {
+    background: linear-gradient(145deg, #1976D2, #0D47A1);
+    box-shadow: 0 8px 0 #002171, 0 10px 20px rgba(13,71,161,0.5);
+  }
+  .inc-btn.resc-btn.sel {
+    box-shadow: 0 4px 0 #002171, 0 6px 20px rgba(13,71,161,0.6), 0 0 0 3px #FFD600;
+    transform: translateY(2px);
+  }
+  /* Acuático — Turquesa */
+  .inc-btn.acua-btn {
+    background: linear-gradient(145deg, #00BCD4, #006064);
+    box-shadow: 0 8px 0 #003B40, 0 10px 20px rgba(0,96,100,0.5);
+  }
+  .inc-btn.acua-btn.sel {
+    box-shadow: 0 4px 0 #003B40, 0 6px 20px rgba(0,96,100,0.6), 0 0 0 3px #FFD600;
+    transform: translateY(2px);
+  }
+  /* Otro — Gris oscuro */
+  .inc-btn.otro-btn {
+    background: linear-gradient(145deg, #607D8B, #263238);
+    box-shadow: 0 8px 0 #102027, 0 10px 20px rgba(38,50,56,0.5);
+  }
+  .inc-btn.otro-btn.sel {
+    box-shadow: 0 4px 0 #102027, 0 6px 20px rgba(38,50,56,0.6), 0 0 0 3px #FFD600;
+    transform: translateY(2px);
+  }
+
+  .inc-icon { font-size: 36px; margin-bottom: 10px; display: block; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4)); }
+  .inc-lbl { font-size: 14px; font-weight: 700; color: #fff; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.03em; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+  .inc-desc { font-size: 10px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+
+  /* LOC CARD */
+  .loc-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .loc-icon-box { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(145deg, #FF5252, #B71C1C); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(183,28,28,0.4); }
+  .loc-name { font-size: 14px; font-weight: 600; color: #fff; }
+  .loc-ok { font-size: 11px; color: var(--green); margin-top: 2px; }
+
+  /* DETAIL VIEWS */
+  .detail-view { display: none; }
+  .detail-view.active { display: block; }
+  .detail-header { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 13px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .detail-icon { font-size: 28px; }
+  .detail-tipo { font-size: 15px; font-weight: 700; font-family: 'Rajdhani', sans-serif; color: #fff; }
+  .detail-sub { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 1px; }
+
+  .counter-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+  .counter-icon { font-size: 24px; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+  .counter-info { flex: 1; }
+  .counter-lbl { font-size: 13px; font-weight: 500; color: #fff; }
+  .counter-sub { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+  .counter-ctrl { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .cnt-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: linear-gradient(145deg, #1976D2, #0D47A1); color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 0 #002171, 0 6px 10px rgba(13,71,161,0.4); transition: all 0.1s; line-height: 1; }
+  .cnt-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #002171; }
+  .cnt-val { font-size: 22px; font-weight: 700; color: #fff; font-family: 'Rajdhani', sans-serif; min-width: 28px; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+
+  .toggle-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; }
+  .toggle-card.on { background: rgba(211,47,47,0.2); border-color: var(--red3); }
+  .toggle-icon { font-size: 22px; flex-shrink: 0; }
+  .toggle-info { flex: 1; }
+  .toggle-lbl { font-size: 13px; font-weight: 500; color: #fff; }
+  .toggle-sub { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+  .toggle-pill { width: 44px; height: 26px; border-radius: 99px; background: rgba(255,255,255,0.2); flex-shrink: 0; position: relative; transition: background 0.2s; }
+  .toggle-pill::after { content:''; position:absolute; width:20px; height:20px; border-radius:50%; background: rgba(255,255,255,0.6); top:3px; left:3px; transition: all 0.2s; }
+  .toggle-card.on .toggle-pill { background: var(--red); }
+  .toggle-card.on .toggle-pill::after { left:21px; background:#fff; }
+
+  .notes-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; }
+  .notes-lbl { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .notes-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 10px 12px; color: #fff; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; resize: vertical; min-height: 70px; }
+  .notes-input::placeholder { color: rgba(255,255,255,0.35); }
+
+  /* SOS */
+  .sos-wrap { text-align: center; margin: 14px 0 20px; }
+  .sos-ring1 { width: 200px; height: 200px; border-radius: 50%; background: rgba(211,47,47,0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto; animation: sosPulse 2s infinite; }
+  .sos-ring2 { width: 172px; height: 172px; border-radius: 50%; background: rgba(211,47,47,0.2); display: flex; align-items: center; justify-content: center; }
+  @keyframes sosPulse { 0%,100%{box-shadow:0 0 0 0 rgba(211,47,47,0.4)} 50%{box-shadow:0 0 0 20px rgba(211,47,47,0)} }
+  .sos-btn { width: 144px; height: 144px; border-radius: 50%; background: linear-gradient(145deg, #FF5252, #B71C1C); border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.15s; font-size: 42px; gap: 2px; box-shadow: 0 10px 0 #7F0000, 0 14px 30px rgba(183,28,28,0.6); }
+  .sos-btn:active { transform: translateY(8px); box-shadow: 0 2px 0 #7F0000, 0 4px 10px rgba(183,28,28,0.4); }
+  .sos-label { font-size: 14px; color: #fff; font-weight: 700; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.12em; text-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+  .sos-hint { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 14px; }
+
+  /* BOTONES DE NAVEGACIÓN 3D */
+  .nav-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .btn-back { flex: 0 0 auto; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 14px 16px; color: rgba(255,255,255,0.7); font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.15s; }
+  .btn-next { flex: 1; background: linear-gradient(145deg, #1976D2, #0D47A1); border: none; border-radius: 12px; padding: 15px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.04em; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 0 #002171, 0 8px 20px rgba(13,71,161,0.4); transition: all 0.15s; }
+  .btn-next:active { transform: translateY(4px); box-shadow: 0 2px 0 #002171; }
+
+  /* RESUMEN */
+  .resumen-card { background: rgba(255,215,0,0.1); border: 1.5px solid rgba(255,215,0,0.3); border-radius: 16px; padding: 14px 16px; margin-bottom: 16px; }
+  .resumen-title { font-size: 12px; font-weight: 600; color: #FFD600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .resumen-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 13px; }
+  .resumen-row:last-child { border-bottom: none; }
+  .resumen-row span { color: rgba(255,255,255,0.55); min-width: 130px; }
+  .resumen-row strong { color: #fff; }
+
+  .send-btn { width: 100%; background: linear-gradient(145deg, #FF5252, #B71C1C); border: none; border-radius: 14px; padding: 18px; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.05em; box-shadow: 0 8px 0 #7F0000, 0 10px 25px rgba(183,28,28,0.5); transition: all 0.15s; }
+  .send-btn:active { transform: translateY(6px); box-shadow: 0 2px 0 #7F0000; }
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* SUCCESS */
+  .success-wrap { text-align: center; padding: 2rem 1rem; }
+  .ok-ring { width: 84px; height: 84px; border-radius: 50%; background: rgba(0,230,118,0.15); border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 38px; box-shadow: 0 0 30px rgba(0,230,118,0.3); }
+  .ok-title { font-size: 24px; font-weight: 700; color: #fff; font-family: 'Rajdhani', sans-serif; margin-bottom: 6px; }
+  .ok-sub { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 1.2rem; }
+  .eta-box { background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 16px 24px; display: inline-flex; align-items: center; gap: 14px; margin-bottom: 1rem; }
+  .eta-num { font-size: 28px; font-weight: 700; color: #fff; font-family: 'Rajdhani', sans-serif; }
+  .eta-lbl { font-size: 11px; color: rgba(255,255,255,0.6); }
+  .reset-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px 26px; color: rgba(255,255,255,0.7); font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .acceso-brigada { background: transparent; border: none; color: rgba(255,255,255,0.4); font-size: 11px; cursor: pointer; font-family: 'Inter', sans-serif; padding: 8px; margin-top: 8px; text-decoration: underline; display: block; text-align: center; width: 100%; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 12px 20px; font-size: 13px; color: #fff; transition: transform 0.3s; z-index: 300; white-space: nowrap; max-width: 90vw; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.ok { border-color: var(--green); color: var(--green); }
+  .toast.err { border-color: #FF5252; color: #FF5252; }
+
+  /* PANEL BOMBERO */
+  .dash-header { background: linear-gradient(135deg, #B71C1C, #7F0000); padding: 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .dash-top { display: flex; align-items: center; justify-content: space-between; }
+  .dash-title { font-size: 20px; font-weight: 700; color: #fff; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.03em; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+  .dash-sub { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 2px; }
+  .dash-pill { background: rgba(0,230,118,0.15); border-radius: 99px; padding: 5px 12px; border: 1px solid rgba(0,230,118,0.3); display: flex; align-items: center; gap: 5px; }
+  .dash-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pls 1.5s infinite; box-shadow: 0 0 8px var(--green); }
+  .dash-pill span { font-size: 11px; color: var(--green); font-weight: 500; }
+  .logout-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 5px 12px; color: rgba(255,255,255,0.7); font-size: 11px; cursor: pointer; font-family: 'Inter', sans-serif; }
+
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .stat-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 16px; }
+  .stat-n { font-size: 36px; font-weight: 700; color: #fff; font-family: 'Rajdhani', sans-serif; text-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .stat-n.red { color: #FF5252; text-shadow: 0 2px 10px rgba(255,82,82,0.4); }
+  .stat-l { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 2px; }
+
+  .tab-sub { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tab-sub-btn { flex: 1; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 9px 6px; font-size: 12px; cursor: pointer; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); font-family: 'Inter', sans-serif; transition: all 0.15s; }
+  .tab-sub-btn.active { background: rgba(255,255,255,0.15); color: #fff; font-weight: 600; border-color: rgba(255,255,255,0.3); }
+  .sub-view { display: none; }
+  .sub-view.active { display: block; }
+
+  .alert-list { display: flex; flex-direction: column; gap: 10px; }
+  .alert-card { background: rgba(255,255,255,0.07); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 14px; display: flex; align-items: flex-start; gap: 10px; animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+  .alert-card.nueva { border-left: 4px solid #FF5252; border-radius: 0 16px 16px 0; background: rgba(255,82,82,0.08); }
+  .a-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .a-icon.fire { background: linear-gradient(145deg, #FF8F00, #E65100); box-shadow: 0 4px 10px rgba(230,81,0,0.4); }
+  .a-icon.acc  { background: linear-gradient(145deg, #F44336, #B71C1C); box-shadow: 0 4px 10px rgba(183,28,28,0.4); }
+  .a-icon.resc { background: linear-gradient(145deg, #1976D2, #0D47A1); box-shadow: 0 4px 10px rgba(13,71,161,0.4); }
+  .a-icon.acua { background: linear-gradient(145deg, #00BCD4, #006064); box-shadow: 0 4px 10px rgba(0,96,100,0.4); }
+  .a-icon.otro { background: linear-gradient(145deg, #607D8B, #263238); box-shadow: 0 4px 10px rgba(38,50,56,0.4); }
+  .a-info { flex: 1; min-width: 0; }
+  .a-addr { font-size: 14px; font-weight: 700; color: #fff; margin: 0 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.02em; }
+  .a-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .badge { font-size: 10px; padding: 3px 9px; border-radius: 99px; font-weight: 600; }
+  .bf  { background: rgba(255,143,0,0.2);  color: #FFB300; }
+  .ba  { background: rgba(244,67,54,0.2);  color: #FF5252; }
+  .br  { background: rgba(25,118,210,0.2); color: #64B5F6; }
+  .baq { background: rgba(0,188,212,0.2);  color: #4DD0E1; }
+  .bo  { background: rgba(96,125,139,0.2); color: #B0BEC5; }
+  .bn  { background: #FF5252; color: #fff; }
+  .bok { background: rgba(0,230,118,0.15); color: var(--green); }
+  .a-time { font-size: 11px; color: rgba(255,255,255,0.4); }
+  .detalles-box { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px 12px; margin-top: 4px; }
+  .det-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #fff; padding: 3px 0; }
+  .det-row span { color: rgba(255,255,255,0.5); min-width: 130px; }
+
+  .cerrar-btn { background: linear-gradient(145deg, #2E7D32, #1B5E20); border: none; border-radius: 10px; padding: 8px 12px; color: #fff; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; font-family: 'Inter', sans-serif; box-shadow: 0 4px 0 #0A3D0C, 0 6px 12px rgba(27,94,32,0.4); transition: all 0.1s; }
+  .cerrar-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #0A3D0C; }
+
+  .empty-state { text-align: center; padding: 3rem 1rem; color: rgba(255,255,255,0.4); }
+  .empty-state .e-icon { font-size: 52px; margin-bottom: 12px; opacity: 0.5; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* LOGIN */
+  .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; width: 100%; max-width: 480px; }
+  .login-logo { width: 80px; height: 80px; background: linear-gradient(145deg, #FF5252, #B71C1C); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 20px; box-shadow: 0 10px 0 #7F0000, 0 14px 30px rgba(183,28,28,0.5); }
+  .login-title { font-size: 28px; font-weight: 700; color: #fff; font-family: 'Rajdhani', sans-serif; margin-bottom: 4px; text-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+  .login-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 32px; text-align: center; }
+  .login-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 24px; width: 100%; }
+  .login-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: block; }
+  .login-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 13px 14px; color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; margin-bottom: 14px; }
+  .login-input::placeholder { color: rgba(255,255,255,0.3); }
+  .login-btn { width: 100%; background: linear-gradient(145deg, #FF5252, #B71C1C); border: none; border-radius: 13px; padding: 16px; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.04em; box-shadow: 0 7px 0 #7F0000, 0 10px 25px rgba(183,28,28,0.5); transition: all 0.15s; }
+  .login-btn:active { transform: translateY(5px); box-shadow: 0 2px 0 #7F0000; }
+  .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .login-err { font-size: 12px; color: #FF5252; margin-top: 10px; text-align: center; min-height: 18px; }
+
+  /* OVERLAY */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: flex-end; justify-content: center; }
+  .overlay.show { display: flex; }
+  .sheet { background: linear-gradient(180deg, #1B2A3B, #0D1B2A); border-radius: 24px 24px 0 0; padding: 20px 18px 36px; width: 100%; max-width: 480px; border-top: 1px solid rgba(255,255,255,0.15); animation: slideUp 0.25s ease; max-height: 90vh; overflow-y: auto; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .sheet-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 99px; margin: 0 auto 18px; }
+  .sheet-title { font-size: 20px; font-weight: 700; color: #fff; font-family: 'Rajdhani', sans-serif; margin-bottom: 4px; }
+  .sheet-sub { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 18px; line-height: 1.5; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: block; }
+  .form-input, .form-select, .form-textarea { width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 11px 13px; color: #fff; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.15s; }
+  .form-input::placeholder, .form-textarea::placeholder { color: rgba(255,255,255,0.25); }
+  .form-select option { background: #1B2A3B; }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-primary { width: 100%; background: linear-gradient(145deg, #2E7D32, #1B5E20); border: none; border-radius: 13px; padding: 16px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.03em; margin-bottom: 10px; box-shadow: 0 6px 0 #0A3D0C, 0 8px 20px rgba(27,94,32,0.4); transition: all 0.15s; }
+  .btn-primary:active { transform: translateY(4px); box-shadow: 0 2px 0 #0A3D0C; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary { width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 13px; color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif; }
+
+  .hist-card { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 14px; margin-bottom: 9px; cursor: pointer; transition: border-color 0.15s; }
+  .hist-card:hover { border-color: rgba(255,255,255,0.25); }
+  .hist-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .hist-tipo { font-size: 14px; font-weight: 700; color: #fff; font-family: 'Rajdhani', sans-serif; }
+  .hist-loc { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+  .hist-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .tl-item { display: flex; gap: 10px; margin-bottom: 2px; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; width: 24px; flex-shrink: 0; }
+  .tl-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
+  .tl-dot.red { background: #FF5252; box-shadow: 0 0 8px rgba(255,82,82,0.5); }
+  .tl-dot.green { background: var(--green); box-shadow: 0 0 8px rgba(0,230,118,0.5); }
+  .tl-line { width: 2px; background: rgba(255,255,255,0.1); flex: 1; margin: 3px 0; min-height: 14px; }
+  .tl-time { font-size: 10px; color: rgba(255,255,255,0.4); margin: 0 0 1px; }
+  .tl-event { font-size: 12px; color: #fff; margin: 0 0 10px; }
+
+  /* MAPA */
+  .mapa-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 400; flex-direction: column; }
+  .mapa-overlay.show { display: flex; }
+  .mapa-header { background: linear-gradient(135deg, #B71C1C, #7F0000); padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .mapa-title { font-size: 16px; font-weight: 700; color: #fff; font-family: 'Rajdhani', sans-serif; }
+  .mapa-sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+  .mapa-close { background: rgba(255,255,255,0.15); border: none; border-radius: 8px; width: 34px; height: 34px; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  #map { flex: 1; width: 100%; }
+  .mapa-info { background: #0d1b2a; padding: 14px 18px; flex-shrink: 0; border-top: 1px solid rgba(255,255,255,0.1); }
+  .mapa-direccion { font-size: 13px; color: #fff; font-weight: 500; margin-bottom: 6px; }
+  .mapa-coords { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+  .mapa-btn-ruta { width: 100%; background: linear-gradient(145deg, #1976D2, #0D47A1); border: none; border-radius: 12px; padding: 14px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.04em; box-shadow: 0 5px 0 #002171; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; }
+  .mapa-btn-ruta:active { transform: translateY(3px); box-shadow: 0 2px 0 #002171; }
+  .ver-mapa-btn { width: 100%; background: linear-gradient(145deg, #1976D2, #0D47A1); border: none; border-radius: 10px; padding: 10px; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; box-shadow: 0 4px 0 #002171; transition: all 0.1s; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .ver-mapa-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #002171; }
+
+  /* MÓVIL */
+  html { -webkit-text-size-adjust: 100%; }
+  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+  input, select, textarea { font-size: 16px !important; } /* Evita zoom en iOS al hacer focus */
+  .screen { scroll-behavior: smooth; }
+  
+  /* Botones más grandes para touch */
+  .inc-btn { min-height: 110px; }
+  .cnt-btn { width: 40px; height: 40px; font-size: 22px; }
+  .cerrar-btn { min-height: 38px; }
+  .ver-mapa-btn { min-height: 38px; }
+  
+  /* Safe area para iPhone con notch */
+  .tab-bar { padding-top: max(6px, env(safe-area-inset-top)); }
+  .mapa-info { padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+
+  /* SELECTOR BOMBEROS */
+  .bomberos-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .bombero-item { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.15s; }
+  .bombero-item.selected { background: rgba(25,118,210,0.2); border-color: #1976D2; }
+  .bombero-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(145deg, #1976D2, #0D47A1); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; font-family: 'Rajdhani', sans-serif; }
+  .bombero-nombre { font-size: 13px; color: #fff; font-weight: 500; }
+  .bombero-rol { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .bombero-check { margin-left: auto; font-size: 18px; opacity: 0; transition: opacity 0.15s; }
+  .bombero-item.selected .bombero-check { opacity: 1; }
+  .no-bomberos { font-size: 12px; color: rgba(255,255,255,0.4); text-align: center; padding: 10px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:none; width:100%; max-width:480px;">
+  <div class="login-screen">
+    <div class="login-logo">🔥</div>
+    <div class="login-title">Acceso Brigada</div>
+    <p class="login-sub">Bomberos Haina · San Cristóbal, RD</p>
+    <div class="login-card">
+      <label class="login-label">Correo electrónico</label>
+      <input class="login-input" type="email" id="login-email" placeholder="correo@ejemplo.com" autocomplete="email">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+      <button class="login-btn" id="login-btn" onclick="if(window.hacerLogin){hacerLogin()}else{hacerLoginFallback()}">🔑 Ingresar al panel</button>
+      <div class="login-err" id="login-err"></div>
+      <button onclick="if(window.recuperarContrasena){recuperarContrasena()}else{recuperarContrasenaFallback()}" style="background:transparent;border:none;color:rgba(255,255,255,0.45);font-size:12px;cursor:pointer;font-family:Inter,sans-serif;margin-top:12px;width:100%;text-align:center;text-decoration:underline;">¿Olvidaste tu contraseña?</button>
+    </div>
+    <button class="acceso-brigada" onclick="if(window.mostrarCiudadano){mostrarCiudadano()}else{mostrarCiudadanoFallback()}">← Volver a la app ciudadano</button>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div id="tab-bar-bombero" style="display:none; width:100%; max-width:480px;">
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTabAuth('ciudadano',this)">📱 App ciudadano</button>
+    <button class="tab-btn" onclick="switchTabAuth('bombero',this)" id="tab-bombero-btn">🛡️ Panel bombero</button>
+  </div>
+</div>
+
+<!-- APP CIUDADANO -->
+<div class="screen active" id="screen-ciudadano">
+  <div class="app-header">
+    <div class="header-top">
+      <div class="logo-row">
+        <div class="logo-box">🔥</div>
+        <div><div class="logo-name">Bomberos Haina</div><div class="logo-sub">San Cristóbal, RD</div></div>
+      </div>
+      <div class="online-badge"><div class="online-dot"></div><span>Activo</span></div>
+    </div>
+    <div class="header-msg"><strong>¿Tienes una emergencia?</strong> Repórtala ahora mismo.</div>
+  </div>
+
+  <div class="steps-bar" id="steps-bar">
+    <div class="step"><div class="step-circle active" id="sc1">1</div><div class="step-label">Incidente</div></div>
+    <div class="step-line" id="sl1"></div>
+    <div class="step"><div class="step-circle" id="sc2">2</div><div class="step-label">Detalles</div></div>
+    <div class="step-line" id="sl2"></div>
+    <div class="step"><div class="step-circle" id="sc3">3</div><div class="step-label">Enviar</div></div>
+  </div>
+
+  <div class="body">
+    <!-- PASO 1 -->
+    <div id="paso1">
+      <p class="sec-lbl" style="margin-top:8px;">Selecciona el tipo de emergencia</p>
+      <div class="inc-grid">
+        <div class="inc-btn fire-btn sel" onclick="selectInc(this,'incendio')"><span class="inc-icon">🔥</span><div class="inc-lbl">Incendio</div><div class="inc-desc">Fuego en estructura</div></div>
+        <div class="inc-btn acc-btn" onclick="selectInc(this,'accidente')"><span class="inc-icon">🚗</span><div class="inc-lbl">Accidente</div><div class="inc-desc">Vehículos o personas</div></div>
+        <div class="inc-btn resc-btn" onclick="selectInc(this,'rescate')"><span class="inc-icon">🚑</span><div class="inc-lbl">Rescate</div><div class="inc-desc">Persona atrapada</div></div>
+        <div class="inc-btn acua-btn" onclick="selectInc(this,'acuatico')"><span class="inc-icon">🌊</span><div class="inc-lbl">Acuático</div><div class="inc-desc">Emergencia en el agua</div></div>
+        <div class="inc-btn otro-btn" style="grid-column:span 2;" onclick="selectInc(this,'otro')"><span class="inc-icon">⚠️</span><div class="inc-lbl">Otro</div><div class="inc-desc">Otra emergencia</div></div>
+      </div>
+      <button class="btn-next" style="width:100%;" onclick="irPaso2()">Continuar → Detalles</button>
+    </div>
+
+    <!-- PASO 2 -->
+    <div id="paso2" style="display:none;">
+      <div class="detail-view" id="det-incendio">
+        <div class="detail-header"><span class="detail-icon">🔥</span><div><div class="detail-tipo">Incendio</div><div class="detail-sub">Brinda los detalles</div></div></div>
+        <div class="counter-card"><span class="counter-icon">🏠</span><div class="counter-info"><div class="counter-lbl">Estructuras en llamas</div><div class="counter-sub">Casas, edificios, locales</div></div><div class="counter-ctrl"><button class="cnt-btn" onclick="cambiarCnt('inc-estructuras',-1)">−</button><div class="cnt-val" id="inc-estructuras">1</div><button class="cnt-btn" onclick="cambiarCnt('inc-estructuras',1)">+</button></div></div>
+        <div class="counter-card"><span class="counter-icon">👤</span><div class="counter-info"><div class="counter-lbl">Personas atrapadas</div><div class="counter-sub">Dentro de la estructura</div></div><div class="counter-ctrl"><button class="cnt-btn" onclick="cambiarCnt('inc-personas',-1)">−</button><div class="cnt-val" id="inc-personas">0</div><button class="cnt-btn" onclick="cambiarCnt('inc-personas',1)">+</button></div></div>
+        <div class="toggle-card" id="tog-materiales" onclick="toggleCard(this)"><span class="toggle-icon">☣️</span><div class="toggle-info"><div class="toggle-lbl">¿Materiales peligrosos?</div><div class="toggle-sub">Gas, químicos, explosivos</div></div><div class="toggle-pill"></div></div>
+        <div class="toggle-card" id="tog-electrico" onclick="toggleCard(this)"><span class="toggle-icon">⚡</span><div class="toggle-info"><div class="toggle-lbl">¿Cables eléctricos cerca?</div><div class="toggle-sub">Postes o tendido eléctrico</div></div><div class="toggle-pill"></div></div>
+        <div class="notes-card"><div class="notes-lbl">Observaciones</div><textarea class="notes-input" id="inc-notas" placeholder="Ej: el fuego empezó en el segundo piso..."></textarea></div>
+      </div>
+      <div class="detail-view" id="det-accidente">
+        <div class="detail-header"><span class="detail-icon">🚗</span><div><div class="detail-tipo">Accidente de tránsito</div><div class="detail-sub">Brinda los detalles</div></div></div>
+        <div class="counter-card"><span class="counter-icon">🚘</span><div class="counter-info"><div class="counter-lbl">Vehículos involucrados</div><div class="counter-sub">Carros, motos, camiones</div></div><div class="counter-ctrl"><button class="cnt-btn" onclick="cambiarCnt('acc-vehiculos',-1)">−</button><div class="cnt-val" id="acc-vehiculos">1</div><button class="cnt-btn" onclick="cambiarCnt('acc-vehiculos',1)">+</button></div></div>
+        <div class="counter-card"><span class="counter-icon">🤕</span><div class="counter-info"><div class="counter-lbl">Personas heridas</div><div class="counter-sub">Con lesiones visibles</div></div><div class="counter-ctrl"><button class="cnt-btn" onclick="cambiarCnt('acc-heridos',-1)">−</button><div class="cnt-val" id="acc-heridos">0</div><button class="cnt-btn" onclick="cambiarCnt('acc-heridos',1)">+</button></div></div>
+        <div class="toggle-card" id="tog-atrapado-acc" onclick="toggleCard(this)"><span class="toggle-icon">🆘</span><div class="toggle-info"><div class="toggle-lbl">¿Personas atrapadas?</div><div class="toggle-sub">Dentro de los vehículos</div></div><div class="toggle-pill"></div></div>
+        <div class="toggle-card" id="tog-combustible" onclick="toggleCard(this)"><span class="toggle-icon">🛢️</span><div class="toggle-info"><div class="toggle-lbl">¿Derrame de combustible?</div><div class="toggle-sub">Gasolina u otros líquidos</div></div><div class="toggle-pill"></div></div>
+        <div class="notes-card"><div class="notes-lbl">Observaciones</div><textarea class="notes-input" id="acc-notas" placeholder="Ej: camión y dos carros, calle bloqueada..."></textarea></div>
+      </div>
+      <div class="detail-view" id="det-rescate">
+        <div class="detail-header"><span class="detail-icon">🚑</span><div><div class="detail-tipo">Rescate</div><div class="detail-sub">Brinda los detalles</div></div></div>
+        <div class="counter-card"><span class="counter-icon">👤</span><div class="counter-info"><div class="counter-lbl">Personas a rescatar</div><div class="counter-sub">Estimado de personas</div></div><div class="counter-ctrl"><button class="cnt-btn" onclick="cambiarCnt('res-personas',-1)">−</button><div class="cnt-val" id="res-personas">1</div><button class="cnt-btn" onclick="cambiarCnt('res-personas',1)">+</button></div></div>
+        <div class="toggle-card" id="tog-consciente" onclick="toggleCard(this)"><span class="toggle-icon">💬</span><div class="toggle-info"><div class="toggle-lbl">¿Persona consciente?</div><div class="toggle-sub">Responde o se comunica</div></div><div class="toggle-pill"></div></div>
+        <div class="toggle-card" id="tog-altura" onclick="toggleCard(this)"><span class="toggle-icon">🏗️</span><div class="toggle-info"><div class="toggle-lbl">¿Atrapada en altura?</div><div class="toggle-sub">Edificio, árbol, estructura</div></div><div class="toggle-pill"></div></div>
+        <div class="notes-card"><div class="notes-lbl">¿Dónde exactamente?</div><textarea class="notes-input" id="res-notas" placeholder="Ej: tercer piso, debajo de escombros..."></textarea></div>
+      </div>
+      <div class="detail-view" id="det-acuatico">
+        <div class="detail-header"><span class="detail-icon">🌊</span><div><div class="detail-tipo">Emergencia acuática</div><div class="detail-sub">Brinda los detalles</div></div></div>
+        <div class="counter-card"><span class="counter-icon">🏊</span><div class="counter-info"><div class="counter-lbl">Personas en el agua</div><div class="counter-sub">Estimado de personas</div></div><div class="counter-ctrl"><button class="cnt-btn" onclick="cambiarCnt('acu-personas',-1)">−</button><div class="cnt-val" id="acu-personas">1</div><button class="cnt-btn" onclick="cambiarCnt('acu-personas',1)">+</button></div></div>
+        <div class="toggle-card" id="tog-salvavidas" onclick="toggleCard(this)"><span class="toggle-icon">🔴</span><div class="toggle-info"><div class="toggle-lbl">¿Tienen salvavidas?</div><div class="toggle-sub">Chaleco u objeto flotante</div></div><div class="toggle-pill"></div></div>
+        <div class="toggle-card" id="tog-corriente" onclick="toggleCard(this)"><span class="toggle-icon">🌀</span><div class="toggle-info"><div class="toggle-lbl">¿Hay corriente fuerte?</div><div class="toggle-sub">Río, mar agitado</div></div><div class="toggle-pill"></div></div>
+        <div class="notes-card"><div class="notes-lbl">¿En qué cuerpo de agua?</div><textarea class="notes-input" id="acu-notas" placeholder="Ej: río Haina, cerca del puente..."></textarea></div>
+      </div>
+      <div class="detail-view" id="det-otro">
+        <div class="detail-header"><span class="detail-icon">⚠️</span><div><div class="detail-tipo">Otra emergencia</div><div class="detail-sub">Describe lo que ocurre</div></div></div>
+        <div class="counter-card"><span class="counter-icon">👥</span><div class="counter-info"><div class="counter-lbl">Personas involucradas</div><div class="counter-sub">Estimado de personas</div></div><div class="counter-ctrl"><button class="cnt-btn" onclick="cambiarCnt('otr-personas',-1)">−</button><div class="cnt-val" id="otr-personas">0</div><button class="cnt-btn" onclick="cambiarCnt('otr-personas',1)">+</button></div></div>
+        <div class="notes-card"><div class="notes-lbl">Describe la emergencia</div><textarea class="notes-input" id="otr-notas" placeholder="Describe con el mayor detalle posible..."></textarea></div>
+      </div>
+
+      <div class="sos-wrap">
+        <div class="sos-ring1"><div class="sos-ring2">
+          <button class="sos-btn" onclick="enviarDesdeDetalle()">🚨<span class="sos-label">SOS</span></button>
+        </div></div>
+        <p class="sos-hint">¿Urgente? Presiona SOS para enviar directo</p>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn-back" onclick="irPaso1()">← Volver</button>
+        <button class="btn-next" onclick="irPaso3()">Continuar → Enviar</button>
+      </div>
+    </div>
+
+    <!-- PASO 3 -->
+    <div id="paso3" style="display:none;">
+      <p class="sec-lbl">Tu ubicación</p>
+      <div class="loc-card">
+        <div class="loc-icon-box">📍</div>
+        <div>
+          <div class="loc-name" id="loc-display">Detectando ubicación...</div>
+          <div class="loc-ok" id="loc-status">⏳ Obteniendo coordenadas...</div>
+        </div>
+      </div>
+      <p class="sec-lbl">Resumen de tu reporte</p>
+      <div class="resumen-card" id="resumen-card"></div>
+      <div class="sos-wrap">
+        <div class="sos-ring1"><div class="sos-ring2">
+          <button class="sos-btn" onclick="enviarAlerta()" id="sos-btn">🚨<span class="sos-label">SOS</span></button>
+        </div></div>
+        <p class="sos-hint">Presiona para enviar la alerta</p>
+      </div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="irPaso2()">← Volver</button>
+        <button class="btn-next send-btn" style="flex:1;" onclick="enviarAlerta()" id="send-btn">🚒 Enviar alerta</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div id="success-view" style="display:none;">
+      <div class="success-wrap">
+        <div class="ok-ring">✅</div>
+        <div class="ok-title">¡Alerta enviada!</div>
+        <p class="ok-sub">Los bomberos recibieron tu reporte y están en camino.</p>
+        <div class="eta-box"><span style="font-size:30px;">🚒</span><div><div class="eta-num">~8 min</div><div class="eta-lbl">Tiempo estimado de llegada</div></div></div>
+        <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:1.2rem;">Quédate en el lugar si es seguro hacerlo.</p>
+        <button class="reset-btn" onclick="resetForm()">Reportar otra emergencia</button>
+      </div>
+      <div style="text-align:center;padding:4px 0 12px;">
+        <button class="acceso-brigada" onclick="mostrarLogin()" id="btn-acceso-brigada">🛡️ Acceso brigada</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:16px 18px 20px;" id="wrap-acceso">
+      <button onclick="if(window.mostrarLogin){mostrarLogin()}else{mostrarLoginFallback()}" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:12px 24px;color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer;font-family:Inter,sans-serif;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;">
+        🔑 Acceso exclusivo para bomberos
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL BOMBERO -->
+<div class="screen" id="screen-bombero">
+  <div class="dash-header">
+    <div class="dash-top">
+      <div><div class="dash-title">Panel de Operaciones</div><div class="dash-sub">Estación Haina · Turno activo</div></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="dash-pill"><div class="dash-dot"></div><span>En línea</span></div>
+        <button id="btn-sonido" onclick="toggleSonido()" style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);border-radius:8px;padding:5px 10px;color:#00E676;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;">🔔 Sonido ON</button>
+        <button class="logout-btn" onclick="cerrarSesion()">Salir</button>
+      </div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-n red" id="count-activas">0</div><div class="stat-l">Alertas activas</div></div>
+      <div class="stat-card"><div class="stat-n" id="count-total">0</div><div class="stat-l">Total hoy</div></div>
+    </div>
+    <div class="tab-sub">
+      <button class="tab-sub-btn active" onclick="switchSub('activas',this)">🔴 Activas</button>
+      <button class="tab-sub-btn" onclick="switchSub('historial',this)">📋 Historial</button>
+    </div>
+    <div class="sub-view active" id="sub-activas">
+      <div class="alert-list" id="alert-list"><div class="empty-state"><div class="e-icon">🔔</div><p>Conectando...</p></div></div>
+    </div>
+    <div class="sub-view" id="sub-historial">
+      <div class="alert-list" id="hist-list"><div class="empty-state"><div class="e-icon">📋</div><p>Sin casos cerrados aún.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAPA OVERLAY -->
+<div class="mapa-overlay" id="mapa-overlay">
+  <div class="mapa-header">
+    <div>
+      <div class="mapa-title" id="mapa-title">📍 Ubicación del incidente</div>
+      <div class="mapa-sub" id="mapa-tipo-label">Cargando...</div>
+    </div>
+    <button class="mapa-close" onclick="cerrarMapa()">✕</button>
+  </div>
+  <div id="map"></div>
+  <div class="mapa-info">
+    <div class="mapa-direccion" id="mapa-direccion">—</div>
+    <div class="mapa-coords" id="mapa-coords">—</div>
+    <button class="mapa-btn-ruta" onclick="abrirRutaExterna()">
+      🗺️ Abrir ruta en Google Maps
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- OVERLAY Reporte -->
+<div class="overlay" id="overlay-reporte">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📝 Reporte del incidente</div>
+    <div class="sheet-sub" id="reporte-sub">Completa el reporte antes de cerrar.</div>
+    <div class="form-group"><label class="form-label">Resultado</label><select class="form-select" id="r-resultado"><option value="resuelto">✅ Resuelto exitosamente</option><option value="parcial">⚠️ Resuelto parcialmente</option><option value="derivado">🔄 Derivado a otra unidad</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Duración (min)</label><input class="form-input" type="number" id="r-duracion" placeholder="ej. 35" min="1"></div>
+      <div class="form-group"><label class="form-label">Personas afectadas</label><input class="form-input" type="number" id="r-personas" placeholder="ej. 2" min="0"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Bomberos en escena</label>
+      <div class="bomberos-list" id="bomberos-list">
+        <div class="no-bomberos">Cargando bomberos en servicio...</div>
+      </div>
+      <input type="hidden" id="r-equipo">
+    </div>
+    <div class="form-group"><label class="form-label">Observaciones</label><textarea class="form-textarea" id="r-notas"></textarea></div>
+    <button class="btn-primary" id="btn-guardar-reporte" onclick="guardarReporte()">✅ Guardar y cerrar caso</button>
+    <button class="btn-secondary" onclick="cancelarReporte()">Cancelar</button>
+  </div>
+</div>
+
+<!-- OVERLAY Historial -->
+<div class="overlay" id="overlay-historial">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div id="hist-detalle"></div>
+    <button class="btn-secondary" style="margin-top:12px;" onclick="document.getElementById('overlay-historial').classList.remove('show')">Cerrar</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, serverTimestamp, getDocs, where }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC0iBa_aVPVt4ZCFV4jIvVzIqDF4VNq-Tw",
+    authDomain: "bomberos-app-8bfac.firebaseapp.com",
+    projectId: "bomberos-app-8bfac",
+    storageBucket: "bomberos-app-8bfac.firebasestorage.app",
+    messagingSenderId: "87146283844",
+    appId: "1:87146283844:web:5d52c9a69cef1e5c2f4d11"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const db   = getFirestore(app);
+  const auth = getAuth(app);
+
+  let tipoSeleccionado = 'incendio';
+  let coordenadas = { lat: 18.4194, lng: -70.0101, texto: 'Haina, San Cristóbal' };
+  let alertaActual = null;
+  let horaDespacho = null;
+
+  const iconos = { incendio:'🔥', accidente:'🚗', rescate:'🚑', acuatico:'🌊', otro:'⚠️' };
+  const clases = { incendio:'fire', accidente:'acc', rescate:'resc', acuatico:'acua', otro:'otro' };
+  const badges = { incendio:'bf', accidente:'ba', rescate:'br', acuatico:'baq', otro:'bo' };
+  const labels = { incendio:'Incendio', accidente:'Accidente', rescate:'Rescate', acuatico:'Acuático', otro:'Otro' };
+
+  // Auth state
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('tab-bar-bombero').style.display = 'block';
+      document.getElementById('wrap-acceso').style.display = 'none';
+    } else {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('tab-bar-bombero').style.display = 'none';
+      document.getElementById('screen-bombero').style.display = 'none';
+      document.getElementById('screen-ciudadano').style.display = 'block';
+      document.getElementById('wrap-acceso').style.display = 'block';
+    }
+  });
+
+  // Geolocalización
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      coordenadas = { lat: pos.coords.latitude, lng: pos.coords.longitude,
+        texto: pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4) };
+      document.getElementById('loc-display').textContent = 'Ubicación detectada';
+      document.getElementById('loc-status').textContent = '✅ Lat: ' + coordenadas.lat.toFixed(4) + ', Lng: ' + coordenadas.lng.toFixed(4);
+    }, () => {
+      document.getElementById('loc-display').textContent = 'Haina, San Cristóbal';
+      document.getElementById('loc-status').textContent = '✅ Ubicación aproximada';
+    });
+  }
+
+  const contadores = {};
+  window.cambiarCnt = (id, delta) => {
+    contadores[id] = Math.max(0, (contadores[id] || 0) + delta);
+    document.getElementById(id).textContent = contadores[id];
+  };
+  window.toggleCard = (el) => el.classList.toggle('on');
+
+  window.selectInc = (el, tipo) => {
+    document.querySelectorAll('.inc-btn').forEach(b => b.classList.remove('sel'));
+    el.classList.add('sel');
+    tipoSeleccionado = tipo;
+  };
+
+  window.irPaso2 = () => {
+    setStep(2);
+    document.querySelectorAll('.detail-view').forEach(d => d.classList.remove('active'));
+    document.getElementById('det-' + tipoSeleccionado)?.classList.add('active');
+  };
+  window.irPaso1 = () => setStep(1);
+  window.irPaso3 = () => { setStep(3); actualizarResumen(); };
+  window.enviarDesdeDetalle = () => { irPaso3(); setTimeout(() => enviarAlerta(), 300); };
+
+  function setStep(n) {
+    document.getElementById('paso1').style.display = n===1?'block':'none';
+    document.getElementById('paso2').style.display = n===2?'block':'none';
+    document.getElementById('paso3').style.display = n===3?'block':'none';
+    document.getElementById('success-view').style.display = 'none';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    for (let i=1;i<=3;i++) {
+      const sc = document.getElementById('sc'+i);
+      sc.className = 'step-circle'+(i<n?' done':i===n?' active':'');
+      sc.textContent = i<n?'✓':i;
+    }
+    for (let i=1;i<=2;i++) document.getElementById('sl'+i).className='step-line'+(i<n?' done':'');
+  }
+
+  function getDetalles() {
+    const t = tipoSeleccionado; const d = {};
+    if (t==='incendio') { d.estructuras=contadores['inc-estructuras']||1; d.personas=contadores['inc-personas']||0; d.materiales=document.getElementById('tog-materiales')?.classList.contains('on')||false; d.electrico=document.getElementById('tog-electrico')?.classList.contains('on')||false; d.notas=document.getElementById('inc-notas')?.value||''; }
+    else if (t==='accidente') { d.vehiculos=contadores['acc-vehiculos']||1; d.heridos=contadores['acc-heridos']||0; d.atrapados=document.getElementById('tog-atrapado-acc')?.classList.contains('on')||false; d.combustible=document.getElementById('tog-combustible')?.classList.contains('on')||false; d.notas=document.getElementById('acc-notas')?.value||''; }
+    else if (t==='rescate') { d.personas=contadores['res-personas']||1; d.consciente=document.getElementById('tog-consciente')?.classList.contains('on')||false; d.altura=document.getElementById('tog-altura')?.classList.contains('on')||false; d.notas=document.getElementById('res-notas')?.value||''; }
+    else if (t==='acuatico') { d.personas=contadores['acu-personas']||1; d.salvavidas=document.getElementById('tog-salvavidas')?.classList.contains('on')||false; d.corriente=document.getElementById('tog-corriente')?.classList.contains('on')||false; d.notas=document.getElementById('acu-notas')?.value||''; }
+    else { d.personas=contadores['otr-personas']||0; d.notas=document.getElementById('otr-notas')?.value||''; }
+    return d;
+  }
+
+  function actualizarResumen() {
+    const t = tipoSeleccionado;
+    const d = getDetalles();
+    let filas = '<div class="resumen-row"><span>Tipo</span><strong>' + (iconos[t]||'') + ' ' + (labels[t]||'') + '</strong></div>';
+    if (t==='incendio') {
+      filas += '<div class="resumen-row"><span>Estructuras</span><strong>' + d.estructuras + '</strong></div>';
+      filas += '<div class="resumen-row"><span>Personas atrapadas</span><strong>' + d.personas + '</strong></div>';
+      if (d.materiales) filas += '<div class="resumen-row"><span>☣️ Mat. peligrosos</span><strong>Sí</strong></div>';
+      if (d.electrico)  filas += '<div class="resumen-row"><span>⚡ Cables eléctricos</span><strong>Sí</strong></div>';
+    } else if (t==='accidente') {
+      filas += '<div class="resumen-row"><span>Vehículos</span><strong>' + d.vehiculos + '</strong></div>';
+      filas += '<div class="resumen-row"><span>Heridos</span><strong>' + d.heridos + '</strong></div>';
+      if (d.atrapados)   filas += '<div class="resumen-row"><span>🆘 Atrapados</span><strong>Sí</strong></div>';
+      if (d.combustible) filas += '<div class="resumen-row"><span>🛢️ Derrame</span><strong>Sí</strong></div>';
+    } else if (t==='rescate') {
+      filas += '<div class="resumen-row"><span>Personas</span><strong>' + d.personas + '</strong></div>';
+      filas += '<div class="resumen-row"><span>Consciente</span><strong>' + (d.consciente?'Sí':'No') + '</strong></div>';
+      if (d.altura) filas += '<div class="resumen-row"><span>🏗️ En altura</span><strong>Sí</strong></div>';
+    } else if (t==='acuatico') {
+      filas += '<div class="resumen-row"><span>En el agua</span><strong>' + d.personas + '</strong></div>';
+      filas += '<div class="resumen-row"><span>Salvavidas</span><strong>' + (d.salvavidas?'Sí':'No') + '</strong></div>';
+      if (d.corriente) filas += '<div class="resumen-row"><span>🌀 Corriente</span><strong>Fuerte</strong></div>';
+    } else {
+      if (d.personas) filas += '<div class="resumen-row"><span>Personas</span><strong>' + d.personas + '</strong></div>';
+    }
+    if (d.notas) filas += '<div class="resumen-row"><span>Notas</span><strong>' + d.notas.substring(0,60) + (d.notas.length>60?'…':'') + '</strong></div>';
+    document.getElementById('resumen-card').innerHTML = '<div class="resumen-title">📋 Información que recibirán los bomberos</div>' + filas;
+  }
+
+
+  window.enviarAlerta = async () => {
+    const btn = document.getElementById('send-btn');
+    btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Enviando...';
+    try {
+      await addDoc(collection(db,'alertas'),{ tipo:tipoSeleccionado, ubicacion:coordenadas.texto, lat:coordenadas.lat, lng:coordenadas.lng, estado:'nueva', detalles:getDetalles(), timestamp:serverTimestamp() });
+      document.getElementById('paso3').style.display='none';
+      document.getElementById('steps-bar').style.display='none';
+      document.getElementById('success-view').style.display='block';
+      mostrarToast('✅ Alerta enviada a los bomberos','ok');
+    } catch(e) {
+      mostrarToast('❌ Error al enviar. Intenta de nuevo.','err');
+      btn.disabled=false; btn.innerHTML='🚒 Enviar alerta';
+    }
+  };
+
+  window.resetForm = () => {
+    document.getElementById('steps-bar').style.display='flex';
+    document.getElementById('success-view').style.display='none';
+    document.getElementById('send-btn').disabled=false;
+    document.getElementById('send-btn').innerHTML='🚒 Enviar alerta';
+    setStep(1);
+  };
+
+  window.mostrarLogin = () => {
+    document.getElementById('screen-ciudadano').style.display='none';
+    document.getElementById('screen-bombero').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  };
+  window.mostrarCiudadano = () => {
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('screen-ciudadano').style.display='block';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  };
+
+  // Recordar correo al cargar
+  window.addEventListener('load', () => {
+    const savedEmail = localStorage.getItem('bomberos_email');
+    if (savedEmail) {
+      const emailInput = document.getElementById('login-email');
+      if (emailInput) emailInput.value = savedEmail;
+    }
+  });
+
+  window.hacerLogin = async () => {
+    const btn=document.getElementById('login-btn');
+    const err=document.getElementById('login-err');
+    const email=document.getElementById('login-email').value.trim();
+    const pass=document.getElementById('login-pass').value;
+    err.textContent='';
+    if (!email || !pass) {
+      err.textContent='❌ Por favor completa correo y contraseña';
+      return;
+    }
+    btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Verificando...';
+    try {
+      const userCred = await signInWithEmailAndPassword(auth,email,pass);
+      // Guardar correo para próxima vez
+      localStorage.setItem('bomberos_email', email);
+      // Registrar bombero en servicio
+      const nombre = email.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g, l => l.toUpperCase());
+      await addDoc(collection(db,'bomberos_servicio'), {
+        uid: userCred.user.uid,
+        email: email,
+        nombre: nombre,
+        horaEntrada: serverTimestamp(),
+        activo: true
+      });
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('tab-bar-bombero').style.display='block';
+      switchTabAuth('bombero',document.getElementById('tab-bombero-btn'));
+      mostrarToast('✅ Bienvenido al panel', 'ok');
+    } catch(e) {
+      let msg = '❌ Correo o contraseña incorrectos';
+      if (e.code === 'auth/user-not-found') msg = '❌ Usuario no encontrado';
+      if (e.code === 'auth/wrong-password') msg = '❌ Contraseña incorrecta';
+      if (e.code === 'auth/invalid-email') msg = '❌ Correo no válido';
+      if (e.code === 'auth/too-many-requests') msg = '❌ Demasiados intentos. Espera un momento';
+      if (e.code === 'auth/invalid-credential') msg = '❌ Credenciales incorrectas. Verifica tu correo y contraseña';
+      err.textContent = msg;
+      btn.disabled=false; btn.innerHTML='🔑 Ingresar al panel';
+    }
+  };
+
+  window.recuperarContrasena = async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const err = document.getElementById('login-err');
+    if (!email) {
+      err.textContent = '⚠️ Escribe tu correo arriba primero';
+      err.style.color = '#FFD600';
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      err.style.color = '#00E676';
+      err.textContent = '✅ Email de recuperación enviado. Revisa tu correo.';
+    } catch(e) {
+      err.style.color = '#FF5252';
+      err.textContent = '❌ No se encontró ese correo';
+    }
+  };
+
+  window.cerrarSesion = async () => {
+    await signOut(auth);
+    document.getElementById('tab-bar-bombero').style.display='none';
+    document.getElementById('screen-bombero').style.display='none';
+    document.getElementById('screen-ciudadano').style.display='block';
+    mostrarToast('Sesión cerrada','');
+  };
+
+  window.switchTabAuth = (tab, btn) => {
+    document.querySelectorAll('#tab-bar-bombero .tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+    btn.classList.add('active');
+    document.getElementById('screen-'+tab).style.display='block';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  };
+
+  window.pedirCierre = (id,ubicacion,tipo) => {
+    alertaActual={id,ubicacion,tipo}; horaDespacho=new Date();
+    document.getElementById('reporte-sub').textContent = tipo + ' — ' + ubicacion + '. Completa el reporte para cerrar.';
+    ['r-duracion','r-personas','r-equipo','r-notas'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('overlay-reporte').classList.add('show');
+  };
+
+  window.guardarReporte = async () => {
+    if(!alertaActual)return;
+    const btn=document.getElementById('btn-guardar-reporte');
+    btn.disabled=true; btn.textContent='Guardando...';
+    try {
+      await updateDoc(doc(db,'alertas',alertaActual.id),{ estado:'atendida', reporte:{ resultado:document.getElementById('r-resultado').value, duracion:parseInt(document.getElementById('r-duracion').value)||0, personas:parseInt(document.getElementById('r-personas').value)||0, equipo:document.getElementById('r-equipo').value.trim(), notas:document.getElementById('r-notas').value.trim(), horaDespacho:horaDespacho?.toISOString(), horaCierre:new Date().toISOString() }});
+      mostrarToast('✅ Caso cerrado y reporte guardado','ok');
+    } catch(e){mostrarToast('❌ Error al guardar','err');}
+    btn.disabled=false; btn.textContent='✅ Guardar y cerrar caso';
+    document.getElementById('overlay-reporte').classList.remove('show');
+    alertaActual=null;
+  };
+
+  window.cancelarReporte = () => { document.getElementById('overlay-reporte').classList.remove('show'); alertaActual=null; };
+
+  function renderDets(d, tipo) {
+    if (!d) return '';
+    const f = [];
+    const row = (icon, label, val) => '<div class="det-row"><span>' + icon + ' ' + label + '</span><strong>' + val + '</strong></div>';
+    if (tipo==='incendio') {
+      if (d.estructuras) f.push(row('🏠','Estructuras', d.estructuras));
+      if (d.personas)    f.push(row('👤','Atrapadas', d.personas));
+      if (d.materiales)  f.push(row('☣️','Mat. peligrosos','Sí'));
+      if (d.electrico)   f.push(row('⚡','Cables','Sí'));
+    } else if (tipo==='accidente') {
+      if (d.vehiculos)   f.push(row('🚘','Vehículos', d.vehiculos));
+      if (d.heridos)     f.push(row('🤕','Heridos', d.heridos));
+      if (d.atrapados)   f.push(row('🆘','Atrapados','Sí'));
+      if (d.combustible) f.push(row('🛢️','Derrame','Sí'));
+    } else if (tipo==='rescate') {
+      if (d.personas)    f.push(row('👤','A rescatar', d.personas));
+      f.push(row('💬','Consciente', d.consciente?'Sí':'No'));
+      if (d.altura)      f.push(row('🏗️','En altura','Sí'));
+    } else if (tipo==='acuatico') {
+      if (d.personas)    f.push(row('🏊','En el agua', d.personas));
+      f.push(row('🔴','Salvavidas', d.salvavidas?'Sí':'No'));
+      if (d.corriente)   f.push(row('🌀','Corriente','Fuerte'));
+    } else {
+      if (d.personas)    f.push(row('👥','Personas', d.personas));
+    }
+    if (d.notas) f.push(row('📝','Notas', d.notas.substring(0,50) + (d.notas.length>50?'…':'')));
+    return f.length ? '<div class="detalles-box">' + f.join('') + '</div>' : '';
+  }
+
+  // Sistema de sonido - usa la función global del bridge
+  let alertasSonadas = new Set();
+  let primerasCarga = true;
+
+  const q = query(collection(db,'alertas'),orderBy('timestamp','desc'));
+  onSnapshot(q, snap => {
+    const todas=[]; snap.forEach(d=>todas.push({id:d.id,...d.data()}));
+    const activas=todas.filter(a=>a.estado==='nueva');
+    const cerradas=todas.filter(a=>a.estado==='atendida');
+    document.getElementById('count-activas').textContent=activas.length;
+    document.getElementById('count-total').textContent=todas.length;
+    
+    // Sonar si hay alertas nuevas
+    if (primerasCarga) {
+      // Registrar alertas existentes sin sonar al cargar por primera vez
+      activas.forEach(a => alertasSonadas.add(a.id));
+      primerasCarga = false;
+    } else {
+      activas.forEach(a => {
+        if (!alertasSonadas.has(a.id)) {
+          alertasSonadas.add(a.id);
+          // Sonido y vibración
+          if (window.sonarAlertaGlobal) window.sonarAlertaGlobal();
+          // Notificación push
+          if (window.enviarNotificacionPush) window.enviarNotificacionPush(a.tipo, a.ubicacion||'Ubicación desconocida');
+          document.title = '🚨 ALERTA NUEVA — Bomberos';
+          setTimeout(() => document.title = 'Bomberos Haina', 5000);
+        }
+      });
+    }
+
+    const listA=document.getElementById('alert-list');
+    listA.innerHTML=activas.length===0?'<div class="empty-state"><div class="e-icon">✅</div><p>Sin alertas activas.</p></div>':activas.map(a=>{
+      const tipo=a.tipo||'otro';
+      const tiempo=a.timestamp?tiempoRel(a.timestamp.toDate()):'Ahora';
+      return '<div class="alert-card nueva">' +
+          '<div class="a-icon ' + (clases[tipo]||'otro') + '">' + (iconos[tipo]||'⚠️') + '</div>' +
+          '<div class="a-info">' +
+            '<div class="a-addr">' + (a.ubicacion||'Ubicación desconocida') + '</div>' +
+            '<div class="a-meta">' +
+              '<span class="badge ' + (badges[tipo]||'bo') + '">' + (labels[tipo]||'Otro') + '</span>' +
+              '<span class="badge bn">Nueva</span>' +
+              '<span class="a-time">🕐 ' + tiempo + '</span>' +
+            '</div>' +
+            renderDets(a.detalles, tipo) +
+          '</div>' +
+          '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">' +
+            '<button class="cerrar-btn" onclick=\'pedirCierre("' + a.id + '","' + (a.ubicacion||'') + '","' + (labels[tipo]||'Otro') + '")\'> 📝 Cerrar</button>' +
+            '<button class="ver-mapa-btn" onclick=\'verMapa(' + (a.lat||18.4194) + ',' + (a.lng||-70.0101) + ',"' + (a.ubicacion||'') + '","' + (labels[tipo]||'Otro') + '")\'> 🗺️ Mapa</button>' +
+          '</div>' +
+        '</div>';
+    }).join('');;
+
+    const listH=document.getElementById('hist-list');
+    listH.innerHTML=cerradas.length===0?'<div class="empty-state"><div class="e-icon">📋</div><p>Sin casos cerrados aún.</p></div>':cerradas.map(a=>{
+      const tipo=a.tipo||'otro'; const r=a.reporte||{};
+      const tiempo=a.timestamp?tiempoRel(a.timestamp.toDate()):'';
+      const resBadge = r.resultado ? '<span class="badge bo">' + (r.resultado==='resuelto'?'✅':r.resultado==='parcial'?'⚠️':'🔄') + ' ' + r.resultado + '</span>' : '';
+      const durBadge = r.duracion ? '<span class="a-time">⏱ ' + r.duracion + ' min</span>' : '';
+      const aData = JSON.stringify(a).replace(/'/g,"&#39;");
+      return '<div class="hist-card" onclick=\'verHistorial('+aData+')\'>' +
+        '<div class="hist-header">' +
+        '<div class="a-icon ' + (clases[tipo]||'otro') + '" style="width:38px;height:38px;font-size:18px;">' + (iconos[tipo]||'⚠️') + '</div>' +
+        '<div><div class="hist-tipo">' + (labels[tipo]||'Incidente') + '</div>' +
+        '<div class="hist-loc">📍 ' + (a.ubicacion||'—') + '</div></div></div>' +
+        '<div class="hist-meta"><span class="badge bok">Atendida</span>' +
+        resBadge + durBadge +
+        '<span class="a-time">🕐 ' + tiempo + '</span></div></div>';
+    }).join('');
+  });
+
+  window.verHistorial = (a) => {
+    const r = a.reporte || {};
+    const iconoRes = {resuelto:'✅', parcial:'⚠️', derivado:'🔄'};
+    const labelRes = {resuelto:'Resuelto exitosamente', parcial:'Resuelto parcialmente', derivado:'Derivado a otra unidad'};
+    const ts = a.timestamp ? new Date(a.timestamp.seconds * 1000) : new Date();
+    const hora = ts.toLocaleTimeString('es-DO', {hour:'2-digit', minute:'2-digit'});
+    const horaLlegada = r.horaDespacho ? new Date(new Date(r.horaDespacho).getTime()+7*60000).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}) : '--';
+    const horaCierre = r.horaCierre ? new Date(r.horaCierre).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}) : '--';
+    const tipo = a.tipo || 'otro';
+    const ubicacion = a.ubicacion || '—';
+    const durMin = r.duracion ? r.duracion + ' min de atención' : '';
+    const equipoHTML = r.equipo ? '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Equipo</div><div style="font-size:13px;color:#fff;margin-bottom:12px;">👥 ' + r.equipo + '</div>' : '';
+    const notasHTML = r.notas ? '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Observaciones</div><div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;font-size:13px;color:#fff;line-height:1.5;">' + r.notas + '</div>' : '';
+
+    document.getElementById('hist-detalle').innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">' +
+        '<div class="a-icon ' + (clases[tipo]||'otro') + '" style="width:50px;height:50px;font-size:26px;">' + (iconos[tipo]||'⚠️') + '</div>' +
+        '<div><div class="sheet-title">' + (labels[tipo]||'Incidente') + '</div>' +
+        '<div style="font-size:12px;color:rgba(255,255,255,0.5);">' + ubicacion + '</div></div>' +
+      '</div>' +
+      '<div style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);border-radius:14px;padding:13px 15px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">' +
+        '<span style="font-size:22px;">' + (iconoRes[r.resultado]||'✅') + '</span>' +
+        '<div><div style="font-size:14px;font-weight:600;color:var(--green);">' + (labelRes[r.resultado]||'Cerrado') + '</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.5);">' + durMin + '</div></div>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">' +
+        '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;">' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:3px;">Personas</div>' +
+          '<div style="font-size:26px;font-weight:700;font-family:Rajdhani,sans-serif;">' + (r.personas||0) + '</div>' +
+        '</div>' +
+        '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;">' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:3px;">Duración</div>' +
+          '<div style="font-size:26px;font-weight:700;font-family:Rajdhani,sans-serif;">' + (r.duracion||0) + '<span style="font-size:12px;"> min</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Línea de tiempo</div>' +
+      '<div style="margin-bottom:14px;">' +
+        '<div class="tl-item"><div class="tl-left"><div class="tl-dot red"></div><div class="tl-line"></div></div><div><div class="tl-time">' + hora + '</div><div class="tl-event">Alerta recibida</div></div></div>' +
+        '<div class="tl-item"><div class="tl-left"><div class="tl-dot green"></div><div class="tl-line"></div></div><div><div class="tl-time">' + horaLlegada + '</div><div class="tl-event">Llegada al lugar</div></div></div>' +
+        '<div class="tl-item"><div class="tl-left"><div class="tl-dot green"></div></div><div><div class="tl-time">' + horaCierre + '</div><div class="tl-event">Caso cerrado</div></div></div>' +
+      '</div>' +
+      equipoHTML + notasHTML;
+
+    document.getElementById('overlay-historial').classList.add('show');
+  };
+
+  function tiempoRel(fecha) {
+    const diff=Math.floor((Date.now()-fecha.getTime())/1000);
+    if(diff<60)return'Hace '+diff+' seg';
+    if(diff<3600)return'Hace '+Math.floor(diff/60)+' min';
+    return'Hace '+Math.floor(diff/3600)+' h';
+  }
+  window.mostrarToast=(msg,tipo)=>{
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.className='toast show '+(tipo||'');
+    setTimeout(()=>t.className='toast',3000);
+  };
+  window.switchSub=(sub,btn)=>{
+    document.querySelectorAll('.tab-sub-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.sub-view').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('sub-'+sub).classList.add('active');
+  };
+</script>
+
+<script>
+  // Bridge para hacer funciones del módulo accesibles globalmente
+  document.addEventListener('DOMContentLoaded', () => {
+    // Verificar que las funciones existen
+    if (typeof window.mostrarLogin !== 'function') {
+      console.error('mostrarLogin no está disponible');
+    }
+  });
+  
+  // Fallback directo por si el módulo tarda en cargar
+  function mostrarLoginFallback() {
+    document.getElementById('screen-ciudadano').style.display = 'none';
+    document.getElementById('screen-bombero').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('login-screen').style.flexDirection = 'column';
+  }
+
+  function mostrarCiudadanoFallback() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('screen-bombero').style.display = 'none';
+    document.getElementById('screen-ciudadano').style.display = 'block';
+    document.getElementById('tab-bar-bombero').style.display = 'none';
+  }
+
+  function hacerLoginFallback() {
+    if (window.hacerLogin) {
+      window.hacerLogin();
+    }
+  }
+
+  function recuperarContrasenaFallback() {
+    if (window.recuperarContrasena) {
+      window.recuperarContrasena();
+    }
+  }
+
+  // AudioContext global compartido
+  let audioCtx = null;
+  let sonidoActivado = true;
+
+  function getAudioCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioCtx;
+  }
+
+  function toggleSonido() {
+    const ctx = getAudioCtx();
+    ctx.resume().then(() => {
+      sonidoActivado = !sonidoActivado;
+      const btn = document.getElementById('btn-sonido');
+      if (sonidoActivado) {
+        btn.textContent = '🔔 Sonido ON';
+        btn.style.color = '#00E676';
+        btn.style.borderColor = 'rgba(0,230,118,0.3)';
+        btn.style.background = 'rgba(0,230,118,0.1)';
+        // Tono corto de confirmación
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.4, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.4);
+      } else {
+        btn.textContent = '🔇 Sonido OFF';
+        btn.style.color = 'rgba(255,255,255,0.4)';
+        btn.style.borderColor = 'rgba(255,255,255,0.15)';
+        btn.style.background = 'rgba(255,255,255,0.05)';
+      }
+    });
+  }
+
+  // Activar AudioContext al primer toque en la pantalla
+  document.addEventListener('touchstart', function initAudio() {
+    const ctx = getAudioCtx();
+    ctx.resume();
+    document.removeEventListener('touchstart', initAudio);
+  }, {once: true});
+
+  // Web Push Notifications (funciona con pantalla apagada si el navegador está abierto)
+  async function pedirPermisoNotificaciones() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') return;
+    if (Notification.permission !== 'denied') {
+      await Notification.requestPermission();
+    }
+  }
+
+  window.enviarNotificacionPush = function(tipo, ubicacion) {
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'granted') {
+      pedirPermisoNotificaciones();
+      return;
+    }
+    const iconos = {incendio:'🔥', accidente:'🚗', rescate:'🚑', acuatico:'🌊', otro:'⚠️'};
+    const icono = iconos[tipo] || '🚨';
+    new Notification('🚨 ALERTA NUEVA — Bomberos Haina', {
+      body: icono + ' ' + (tipo||'Emergencia').toUpperCase() + ' en ' + ubicacion,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23D32F2F"/><text y=".9em" font-size="80">🔥</text></svg>',
+      badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23D32F2F"/><text y=".9em" font-size="80">🔥</text></svg>',
+      tag: 'alerta-bomberos',
+      requireInteraction: true,
+      vibrate: [300, 100, 300, 100, 600]
+    });
+  };
+
+  // Pedir permiso automáticamente al cargar
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(pedirPermisoNotificaciones, 2000);
+  });
+
+  // Sirena de bombero real
+  window.sonarAlertaGlobal = function() {
+    if (!sonidoActivado) return;
+    try {
+      const ctx = getAudioCtx();
+      ctx.resume();
+
+      // Vibración patrón de emergencia
+      if (navigator.vibrate) navigator.vibrate([300,100,300,100,300,100,600,200,600]);
+
+      function sirenaTono(freqInicio, freqFin, tInicio, duracion, vol) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const dist = ctx.createWaveShaper();
+
+        // Forma de onda que suena más a sirena
+        osc.type = 'sawtooth';
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        // Barrido de frecuencia (efecto doppler de sirena)
+        osc.frequency.setValueAtTime(freqInicio, ctx.currentTime + tInicio);
+        osc.frequency.linearRampToValueAtTime(freqFin, ctx.currentTime + tInicio + duracion * 0.5);
+        osc.frequency.linearRampToValueAtTime(freqInicio, ctx.currentTime + tInicio + duracion);
+
+        gain.gain.setValueAtTime(0, ctx.currentTime + tInicio);
+        gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + tInicio + 0.05);
+        gain.gain.setValueAtTime(vol, ctx.currentTime + tInicio + duracion - 0.05);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + tInicio + duracion);
+
+        osc.start(ctx.currentTime + tInicio);
+        osc.stop(ctx.currentTime + tInicio + duracion + 0.1);
+      }
+
+      // Patrón wail (aullido) de sirena americana: sube-baja 4 veces
+      const ciclo = 0.7;
+      for (let i = 0; i < 4; i++) {
+        sirenaTono(600, 1200, i * ciclo, ciclo, 0.5);
+      }
+
+    } catch(e) {
+      console.error('Error sonido:', e);
+    }
+  };
+</script>
+<!-- Leaflet para OpenStreetMap -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  let mapaInstance = null;
+  let alertaLatActual = 18.4194;
+  let alertaLngActual = -70.0101;
+  let alertaUbicActual = '';
+  let alertaTipoActual = '';
+
+  window.verMapa = (lat, lng, ubicacion, tipo) => {
+    alertaLatActual = lat;
+    alertaLngActual = lng;
+    alertaUbicActual = ubicacion;
+    alertaTipoActual = tipo;
+
+    document.getElementById('mapa-title').textContent = '📍 ' + ubicacion;
+    document.getElementById('mapa-tipo-label').textContent = tipo + ' — Ubicación del ciudadano';
+    document.getElementById('mapa-direccion').textContent = '📍 ' + ubicacion;
+    document.getElementById('mapa-coords').textContent = 'Lat: ' + parseFloat(lat).toFixed(4) + ', Lng: ' + parseFloat(lng).toFixed(4);
+
+    document.getElementById('mapa-overlay').classList.add('show');
+
+    setTimeout(() => {
+      if (mapaInstance) {
+        mapaInstance.remove();
+        mapaInstance = null;
+      }
+
+      mapaInstance = L.map('map').setView([lat, lng], 16);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(mapaInstance);
+
+      // Marcador de la emergencia
+      const iconoEmergencia = L.divIcon({
+        html: '<div style="background:#D32F2F;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid white;box-shadow:0 4px 12px rgba(211,47,47,0.6);">🚨</div>',
+        className: '',
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+      });
+
+      L.marker([lat, lng], { icon: iconoEmergencia })
+        .addTo(mapaInstance)
+        .bindPopup('<b>' + alertaTipoActual + '</b><br>' + ubicacion)
+        .openPopup();
+
+      // Estación de bomberos Haina (fija)
+      const iconoBomberos = L.divIcon({
+        html: '<div style="background:#0D47A1;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid white;box-shadow:0 4px 12px rgba(13,71,161,0.6);">🚒</div>',
+        className: '',
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+      });
+
+      // Coordenadas aproximadas estación Haina
+      L.marker([18.4194, -70.0101], { icon: iconoBomberos })
+        .addTo(mapaInstance)
+        .bindPopup('<b>Estación Bomberos Haina</b>');
+
+      // Línea entre estación y emergencia
+      L.polyline([[18.4194, -70.0101], [lat, lng]], {
+        color: '#FF5252',
+        weight: 3,
+        opacity: 0.8,
+        dashArray: '8, 6'
+      }).addTo(mapaInstance);
+
+    }, 300);
+  };
+
+  window.cerrarMapa = () => {
+    document.getElementById('mapa-overlay').classList.remove('show');
+  };
+
+  window.abrirRutaExterna = () => {
+    const url = `https://www.google.com/maps/dir/18.4194,-70.0101/${alertaLatActual},${alertaLngActual}`;
+    window.open(url, '_blank');
+  };
+</script>
+</body>
+</html>
