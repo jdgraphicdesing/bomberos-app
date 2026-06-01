@@ -976,8 +976,8 @@
             renderDets(a.detalles, tipo) +
           '</div>' +
           '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">' +
-            '<button class="cerrar-btn" onclick=\'pedirCierre("' + a.id + '","' + (a.ubicacion||'') + '","' + (labels[tipo]||'Otro') + '")\'> 📝 Cerrar</button>' +
-            '<button class="ver-mapa-btn" onclick=\'verMapa(' + (a.lat||18.4194) + ',' + (a.lng||-70.0101) + ',"' + (a.ubicacion||'') + '","' + (labels[tipo]||'Otro') + '")\'> 🗺️ Mapa</button>' +
+            '<button class="cerrar-btn" data-id="' + a.id + '" data-ubicacion="' + (a.ubicacion||'').replace(/"/g,"'") + '" data-tipo="' + (labels[tipo]||'Otro') + '"> 📝 Cerrar</button>' +
+            '<button class="ver-mapa-btn" data-lat="' + (a.lat||18.4194) + '" data-lng="' + (a.lng||-70.0101) + '" data-ubicacion="' + (a.ubicacion||'').replace(/"/g,"'") + '" data-tipo="' + (labels[tipo]||'Otro') + '"> 🗺️ Mapa</button>' +
           '</div>' +
         '</div>';
     }).join('');;
@@ -1052,6 +1052,33 @@
     if(diff<3600)return'Hace '+Math.floor(diff/60)+' min';
     return'Hace '+Math.floor(diff/3600)+' h';
   }
+
+  // Event delegation para botones dinámicos
+  document.addEventListener('click', async (e) => {
+    // Botón cerrar caso
+    const cerrarBtn = e.target.closest('.cerrar-btn');
+    if (cerrarBtn) {
+      const id = cerrarBtn.dataset.id;
+      const ubicacion = cerrarBtn.dataset.ubicacion;
+      const tipo = cerrarBtn.dataset.tipo;
+      if (id && window._pedirCierreInterno) {
+        await window._pedirCierreInterno(id, ubicacion, tipo);
+      }
+      return;
+    }
+    // Botón ver mapa
+    const mapaBtn = e.target.closest('.ver-mapa-btn');
+    if (mapaBtn) {
+      const lat = parseFloat(mapaBtn.dataset.lat) || 18.4194;
+      const lng = parseFloat(mapaBtn.dataset.lng) || -70.0101;
+      const ubicacion = mapaBtn.dataset.ubicacion;
+      const tipo = mapaBtn.dataset.tipo;
+      if (window._verMapaInterno) {
+        window._verMapaInterno(lat, lng, ubicacion, tipo);
+      }
+      return;
+    }
+  });
   window.mostrarToast=(msg,tipo)=>{
     const t=document.getElementById('toast');
     t.textContent=msg; t.className='toast show '+(tipo||'');
