@@ -846,7 +846,7 @@
     window.scrollTo({top: 0, behavior: 'smooth'});
   };
 
-  window.pedirCierre = async (id, ubicacion, tipo) => {
+  window._pedirCierreInterno = async (id, ubicacion, tipo) => {
     alertaActual = {id, ubicacion, tipo};
     horaDespacho = new Date();
     document.getElementById('reporte-sub').textContent = tipo + ' — ' + ubicacion + '. Completa el reporte para cerrar.';
@@ -1089,6 +1089,19 @@
     document.getElementById('tab-bar-bombero').style.display = 'none';
   }
 
+  // Bridge para pedirCierre y verMapa - accesibles desde onclick en HTML dinámico
+  function pedirCierre(id, ubicacion, tipo) {
+    if (window._pedirCierreInterno) {
+      window._pedirCierreInterno(id, ubicacion, tipo);
+    }
+  }
+
+  function verMapa(lat, lng, ubicacion, tipo) {
+    if (window._verMapaInterno) {
+      window._verMapaInterno(lat, lng, ubicacion, tipo);
+    }
+  }
+
   function hacerLoginFallback() {
     if (window.hacerLogin) {
       window.hacerLogin();
@@ -1291,7 +1304,7 @@
   let alertaUbicActual = '';
   let alertaTipoActual = '';
 
-  window.verMapa = (lat, lng, ubicacion, tipo) => {
+  window._verMapaInterno = (lat, lng, ubicacion, tipo) => {
     alertaLatActual = lat;
     alertaLngActual = lng;
     alertaUbicActual = ubicacion;
