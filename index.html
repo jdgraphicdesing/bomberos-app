@@ -2,7 +2,11 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Rescate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Bomberos Haina</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
@@ -1457,23 +1461,59 @@
     }
   }
 
+  let _audioCtx = null;
+  let _sonidoActivado = true;
+
   function toggleSonido() {
-    sonidoActivado = !sonidoActivado;
+    _sonidoActivado = !_sonidoActivado;
     const btn = document.getElementById('btn-sonido');
-    if (sonidoActivado) {
+    if (_sonidoActivado) {
       btn.textContent = '🔔 Sonido ON';
       btn.style.color = '#00E676';
       btn.style.borderColor = 'rgba(0,230,118,0.3)';
       btn.style.background = 'rgba(0,230,118,0.1)';
-      inicializarAudio();
+      // Inicializar AudioContext con interacción del usuario
+      if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      _audioCtx.resume();
     } else {
       btn.textContent = '🔇 Sonido OFF';
       btn.style.color = 'rgba(255,255,255,0.4)';
       btn.style.borderColor = 'rgba(255,255,255,0.15)';
       btn.style.background = 'rgba(255,255,255,0.05)';
-      if (_siren) _siren.pause();
     }
-  }}
+  }
+
+  // Función de sirena accesible globalmente
+  window.sonarAlertaGlobal = function() {
+    if (!_sonidoActivado) return;
+    try {
+      if (navigator.vibrate) navigator.vibrate([400,100,400,100,400,100,800,200,800]);
+      if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      _audioCtx.resume();
+      const ctx = _audioCtx;
+
+      function ciclo(t) {
+        const osc1 = ctx.createOscillator(), g1 = ctx.createGain();
+        const osc2 = ctx.createOscillator(), g2 = ctx.createGain();
+        const lfo = ctx.createOscillator(), lfoG = ctx.createGain();
+        osc1.type = 'sawtooth'; osc2.type = 'square'; lfo.type = 'sine';
+        lfo.frequency.value = 0.85; lfoG.gain.value = 320;
+        lfo.connect(lfoG); lfoG.connect(osc1.frequency); lfoG.connect(osc2.frequency);
+        osc1.frequency.value = 750; osc2.frequency.value = 375;
+        osc1.connect(g1); g1.connect(ctx.destination);
+        osc2.connect(g2); g2.connect(ctx.destination);
+        const dur = 1.5;
+        [[g1,0.45],[g2,0.18]].forEach(([g,v]) => {
+          g.gain.setValueAtTime(0, ctx.currentTime+t);
+          g.gain.linearRampToValueAtTime(v, ctx.currentTime+t+0.08);
+          g.gain.setValueAtTime(v, ctx.currentTime+t+dur-0.1);
+          g.gain.linearRampToValueAtTime(0, ctx.currentTime+t+dur);
+        });
+        [osc1,osc2,lfo].forEach(o => { o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+dur+0.1); });
+      }
+      ciclo(0.0); ciclo(1.7); ciclo(3.4);
+    } catch(e) { console.error('Error sonido:', e); }
+  };}
 
   // Inicializar al primer toque (requerido por iOS)
   document.addEventListener('touchstart', function initAudio() {
