@@ -592,6 +592,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
   import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, serverTimestamp, getDocs, where }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail }
@@ -1728,4 +1729,41 @@
   };
 </script>
 </body>
-</html>
+</html>  async function suscribirNotificaciones() {
+    if (!messaging) { console.log('Messaging no disponible'); return; }
+    try {
+      const permiso = await Notification.requestPermission();
+      console.log('Permiso notificaciones:', permiso);
+      if (permiso !== 'granted') { 
+        console.log('Permiso denegado');
+        return; 
+      }
+
+      const token = await getToken(messaging, {
+        vapidKey: 'BI_FJQ3T0OcZT5NV39rRXBLtqGOcU9TWR59vBCKvZMVR_Gx4OdWHodWDKTV5_DrTdlCNosgQgPSSpWlefgphACk'
+      });
+
+      if (token) {
+        console.log('Token FCM obtenido');
+        const user = auth.currentUser;
+        if (user) {
+          await addDoc(collection(db, 'fcm_tokens'), {
+            token: token,
+            uid: user.uid,
+            email: user.email,
+            timestamp: serverTimestamp()
+          });
+          mostrarToast('🔔 Notificaciones activadas', 'ok');
+        }
+      }
+
+      onMessage(messaging, (payload) => {
+        if (window.sonarAlertaGlobal) window.sonarAlertaGlobal();
+      });
+
+    } catch(e) {
+      console.error('Error suscribirNotificaciones:', e);
+    }
+  }
+
+
