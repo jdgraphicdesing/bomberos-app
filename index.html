@@ -1211,37 +1211,6 @@
   }
 
   // Sistema de audio con HTML5 - funciona en iOS y Android
-  let sonidoActivado = true;
-
-  // Sirena 650Hz-1400Hz pre-generada - funciona en iPhone y Android
-  let _siren = null;
-
-  function generarSirenaWAV() {
-    const sr = 44100, dur = 5, n = sr * dur;
-    const buf = new Float32Array(n);
-    for (let i = 0; i < n; i++) {
-      const t = i / sr;
-      const cyc = t % 1.5;
-      const freq = cyc < 0.75 ? 650 + 750 * cyc / 0.75 : 1400 - 750 * (cyc - 0.75) / 0.75;
-      const ph = 2 * Math.PI * freq * t;
-      const saw = (2 / Math.PI) * Math.atan(Math.tan(ph / 2)) * 0.5;
-      const env = Math.min(t * 8, 1) * Math.min((dur - t) * 8, 1);
-      buf[i] = Math.max(-1, Math.min(1, (saw + Math.sin(ph*2)*0.2 + Math.sin(ph*3)*0.1) * env * 0.7));
-    }
-    const ds = n * 2;
-    const ab = new ArrayBuffer(44 + ds);
-    const v = new DataView(ab);
-    const ws = (o,s) => { for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
-    ws(0,'RIFF'); v.setUint32(4,36+ds,true); ws(8,'WAVE'); ws(12,'fmt ');
-    v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
-    v.setUint32(24,sr,true); v.setUint32(28,sr*2,true);
-    v.setUint16(32,2,true); v.setUint16(34,16,true);
-    ws(36,'data'); v.setUint32(40,ds,true);
-    for(let i=0;i<n;i++) { const s=buf[i]; v.setInt16(44+i*2,s<0?s*32768:s*32767,true); }
-    let b=''; const u=new Uint8Array(ab);
-    for(let i=0;i<u.length;i++) b+=String.fromCharCode(u[i]);
-    return btoa(b);
-  }
 
   function inicializarAudio() {
     if (_siren) return;
@@ -1291,176 +1260,7 @@
 
 
 <script>
-  // Bridge para hacer funciones del módulo accesibles globalmente
-  document.addEventListener('DOMContentLoaded', () => {
-    // Verificar que las funciones existen
-    if (typeof window.mostrarLogin !== 'function') {
-      console.error('mostrarLogin no está disponible');
-    }
-  });
-  
-  // Fallback directo por si el módulo tarda en cargar
-  function mostrarLoginFallback() {
-    document.getElementById('screen-ciudadano').style.display = 'none';
-    document.getElementById('screen-bombero').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('login-screen').style.flexDirection = 'column';
-  }
-
-  function mostrarCiudadanoFallback() {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('screen-bombero').style.display = 'none';
-    document.getElementById('screen-ciudadano').style.display = 'block';
-    document.getElementById('tab-bar-bombero').style.display = 'none';
-  }
-
-  // Bridge para pedirCierre y verMapa - accesibles desde onclick en HTML dinámico
-  function pedirCierre(id, ubicacion, tipo) {
-    if (window._pedirCierreInterno) {
-      window._pedirCierreInterno(id, ubicacion, tipo);
-    }
-  }
-
-  function activarNotificaciones() {
-    const btn = document.getElementById('btn-notif');
-    // Llamar directamente sin async para iOS
-    Notification.requestPermission(function(permiso) {
-      if (permiso === 'granted') {
-        btn.textContent = '🔔 Alertas ON';
-        btn.style.color = '#00E676';
-        btn.style.borderColor = 'rgba(0,230,118,0.3)';
-        btn.style.background = 'rgba(0,230,118,0.1)';
-      } else {
-        btn.textContent = '🔕 Denegado';
-        btn.style.color = 'rgba(255,100,100,0.8)';
-      }
-    });
-  }
-
-  async function suscribirNotificaciones() {
-    if (!('Notification' in window)) return;
-    try {
-      const permiso = await Notification.requestPermission();
-      if (permiso !== 'granted') return;
-      mostrarToast('🔔 Notificaciones activadas', 'ok');
-    } catch(e) {
-      console.log('Error notificaciones:', e);
-    }
-  }
-
-  function verMapa(lat, lng, ubicacion, tipo) {
-    if (window._verMapaInterno) {
-      window._verMapaInterno(lat, lng, ubicacion, tipo);
-    }
-  }
-
-  function hacerLoginFallback() {
-    if (window.hacerLogin) {
-      window.hacerLogin();
-    }
-  }
-
-  function recuperarContrasenaFallback() {
-    if (window.recuperarContrasena) {
-      window.recuperarContrasena();
-    }
-  }
-
-  // Sistema de audio con HTML5 - funciona en iOS y Android
-  let sonidoActivado = true;
-
-  function createWAV(samples, sampleRate) {
-    const numChannels = 1;
-    const bitsPerSample = 16;
-    const blockAlign = numChannels * bitsPerSample / 8;
-    const byteRate = sampleRate * blockAlign;
-    const dataSize = samples.length * blockAlign;
-    const buffer = new ArrayBuffer(44 + dataSize);
-    const view = new DataView(buffer);
-    const writeStr = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
-    writeStr(0, 'RIFF');
-    view.setUint32(4, 36 + dataSize, true);
-    writeStr(8, 'WAVE');
-    writeStr(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, numChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, byteRate, true);
-    view.setUint16(32, blockAlign, true);
-    view.setUint16(34, bitsPerSample, true);
-    writeStr(36, 'data');
-    view.setUint32(40, dataSize, true);
-    for (let i = 0; i < samples.length; i++) {
-      const s = Math.max(-1, Math.min(1, samples[i]));
-      view.setInt16(44 + i * 2, s < 0 ? s * 32768 : s * 32767, true);
-    }
-    return buffer;
-  }
-
-  function createWAV(samples, sampleRate) {
-    const numChannels = 1;
-    const bitsPerSample = 16;
-    const blockAlign = numChannels * bitsPerSample / 8;
-    const byteRate = sampleRate * blockAlign;
-    const dataSize = samples.length * blockAlign;
-    const buffer = new ArrayBuffer(44 + dataSize);
-    const view = new DataView(buffer);
-    const writeStr = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
-    writeStr(0, 'RIFF');
-    view.setUint32(4, 36 + dataSize, true);
-    writeStr(8, 'WAVE');
-    writeStr(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, numChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, byteRate, true);
-    view.setUint16(32, blockAlign, true);
-    view.setUint16(34, bitsPerSample, true);
-    writeStr(36, 'data');
-    view.setUint32(40, dataSize, true);
-    for (let i = 0; i < samples.length; i++) {
-      const s = Math.max(-1, Math.min(1, samples[i]));
-      view.setInt16(44 + i * 2, s < 0 ? s * 32768 : s * 32767, true);
-    }
-    return buffer;
-  }
-
-  function inicializarAudio() {
-    if (audioSirena) return;
-    try {
-      const sampleRate = 44100;
-      const duration = 5;
-      const numSamples = sampleRate * duration;
-      const buffer = new Float32Array(numSamples);
-
-      for (let i = 0; i < numSamples; i++) {
-        const t = i / sampleRate;
-        const cycle = t % 1.5;
-        let freq;
-        if (cycle < 0.75) {
-          freq = 650 + (750 * cycle / 0.75);
-        } else {
-          freq = 1400 - (750 * (cycle - 0.75) / 0.75);
-        }
-        const phase = 2 * Math.PI * freq * t;
-        const saw = (2 / Math.PI) * Math.atan(Math.tan(phase / 2)) * 0.5;
-        const harm2 = Math.sin(phase * 2) * 0.2;
-        const harm3 = Math.sin(phase * 3) * 0.1;
-        const env = Math.min(t * 8, 1) * Math.min((duration - t) * 8, 1);
-        buffer[i] = (saw + harm2 + harm3) * env * 0.7;
-      }
-
-      const wavBuffer = createWAV(buffer, sampleRate);
-      const blob = new Blob([wavBuffer], {type: 'audio/wav'});
-      const url = URL.createObjectURL(blob);
-      audioSirena = new Audio(url);
-    } catch(e) {
-      audioSirena = new Audio();
-    }
-  }
-
+  // ===== SISTEMA DE AUDIO =====
   let _audioCtx = null;
   let _sonidoActivado = true;
 
@@ -1472,7 +1272,6 @@
       btn.style.color = '#00E676';
       btn.style.borderColor = 'rgba(0,230,118,0.3)';
       btn.style.background = 'rgba(0,230,118,0.1)';
-      // Inicializar AudioContext con interacción del usuario
       if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       _audioCtx.resume();
     } else {
@@ -1483,90 +1282,85 @@
     }
   }
 
-  // Función de sirena accesible globalmente
   window.sonarAlertaGlobal = function() {
     if (!_sonidoActivado) return;
     try {
-      if (navigator.vibrate) navigator.vibrate([400,100,400,100,400,100,800,200,800]);
+      if (navigator.vibrate) navigator.vibrate([400,100,400,100,800]);
       if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       _audioCtx.resume();
       const ctx = _audioCtx;
-
       function ciclo(t) {
-        const osc1 = ctx.createOscillator(), g1 = ctx.createGain();
-        const osc2 = ctx.createOscillator(), g2 = ctx.createGain();
-        const lfo = ctx.createOscillator(), lfoG = ctx.createGain();
-        osc1.type = 'sawtooth'; osc2.type = 'square'; lfo.type = 'sine';
-        lfo.frequency.value = 0.85; lfoG.gain.value = 320;
-        lfo.connect(lfoG); lfoG.connect(osc1.frequency); lfoG.connect(osc2.frequency);
-        osc1.frequency.value = 750; osc2.frequency.value = 375;
-        osc1.connect(g1); g1.connect(ctx.destination);
-        osc2.connect(g2); g2.connect(ctx.destination);
-        const dur = 1.5;
-        [[g1,0.45],[g2,0.18]].forEach(([g,v]) => {
-          g.gain.setValueAtTime(0, ctx.currentTime+t);
-          g.gain.linearRampToValueAtTime(v, ctx.currentTime+t+0.08);
-          g.gain.setValueAtTime(v, ctx.currentTime+t+dur-0.1);
-          g.gain.linearRampToValueAtTime(0, ctx.currentTime+t+dur);
+        const o1=ctx.createOscillator(), g1=ctx.createGain();
+        const o2=ctx.createOscillator(), g2=ctx.createGain();
+        const lfo=ctx.createOscillator(), lfoG=ctx.createGain();
+        o1.type='sawtooth'; o2.type='square'; lfo.type='sine';
+        lfo.frequency.value=0.85; lfoG.gain.value=320;
+        lfo.connect(lfoG); lfoG.connect(o1.frequency); lfoG.connect(o2.frequency);
+        o1.frequency.value=750; o2.frequency.value=375;
+        o1.connect(g1); g1.connect(ctx.destination);
+        o2.connect(g2); g2.connect(ctx.destination);
+        [[g1,0.45],[g2,0.18]].forEach(([g,v])=>{
+          g.gain.setValueAtTime(0,ctx.currentTime+t);
+          g.gain.linearRampToValueAtTime(v,ctx.currentTime+t+0.08);
+          g.gain.setValueAtTime(v,ctx.currentTime+t+1.4);
+          g.gain.linearRampToValueAtTime(0,ctx.currentTime+t+1.5);
         });
-        [osc1,osc2,lfo].forEach(o => { o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+dur+0.1); });
+        [o1,o2,lfo].forEach(o=>{o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+1.6);});
       }
       ciclo(0.0); ciclo(1.7); ciclo(3.4);
     } catch(e) { console.error('Error sonido:', e); }
-  };}
+  };
 
-  // Inicializar al primer toque (requerido por iOS)
-  document.addEventListener('touchstart', function initAudio() {
-    inicializarAudio();
-    document.removeEventListener('touchstart', initAudio);
+  // Inicializar AudioContext en primer toque
+  document.addEventListener('touchstart', function init() {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    _audioCtx.resume();
+    document.removeEventListener('touchstart', init);
   }, {once: true});
 
-  // Web Push Notifications (funciona con pantalla apagada si el navegador está abierto)
-  async function pedirPermisoNotificaciones() {
-    if (!('Notification' in window)) return;
-    if (Notification.permission === 'granted') return;
-    if (Notification.permission !== 'denied') {
-      await Notification.requestPermission();
-    }
-  }
-
-  window.enviarNotificacionPush = function(tipo, ubicacion) {
-    if (!('Notification' in window)) return;
-    if (Notification.permission !== 'granted') {
-      pedirPermisoNotificaciones();
+  // ===== NOTIFICACIONES =====
+  function activarNotificaciones() {
+    const btn = document.getElementById('btn-notif');
+    if (!('Notification' in window)) {
+      btn.textContent = '❌ No soportado';
       return;
     }
-    const iconos = {incendio:'🔥', accidente:'🚗', rescate:'🚑', acuatico:'🌊', otro:'⚠️'};
-    const icono = iconos[tipo] || '🚨';
-    new Notification('🚨 ALERTA NUEVA — Bomberos Haina', {
-      body: icono + ' ' + (tipo||'Emergencia').toUpperCase() + ' en ' + ubicacion,
-      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23D32F2F"/><text y=".9em" font-size="80">🔥</text></svg>',
-      badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23D32F2F"/><text y=".9em" font-size="80">🔥</text></svg>',
-      tag: 'alerta-bomberos',
-      requireInteraction: true,
-      vibrate: [300, 100, 300, 100, 600]
-    });
-  };
-
-  // Pedir permiso automáticamente al cargar
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(pedirPermisoNotificaciones, 2000);
-  });
-
-  // Sirena real con archivo MP3
-  window.sonarAlertaGlobal = function() {
-    if (!sonidoActivado) return;
-    try {
-      if (navigator.vibrate) navigator.vibrate([400,100,400,100,400,100,800,200,800]);
-      inicializarAudio();
-      if (audioSirena) {
-        audioSirena.currentTime = 0;
-        audioSirena.play().catch(() => {});
+    Notification.requestPermission(function(permiso) {
+      if (permiso === 'granted') {
+        btn.textContent = '🔔 Alertas ON';
+        btn.style.color = '#00E676';
+        btn.style.borderColor = 'rgba(0,230,118,0.3)';
+        btn.style.background = 'rgba(0,230,118,0.1)';
+        if (window._suscribirNotificaciones) window._suscribirNotificaciones();
+      } else {
+        btn.textContent = '🔕 Denegado';
+        btn.style.color = 'rgba(255,100,100,0.8)';
       }
-    } catch(e) {
-      console.error('Error sonido:', e);
-    }
-  };
+    });
+  }
+
+  // ===== BRIDGE =====
+  function pedirCierre(id, ubicacion, tipo) {
+    if (window._pedirCierreInterno) window._pedirCierreInterno(id, ubicacion, tipo);
+  }
+  function verMapa(lat, lng, ubicacion, tipo) {
+    if (window._verMapaInterno) window._verMapaInterno(lat, lng, ubicacion, tipo);
+  }
+  function recuperarContrasenaFallback() {
+    if (window.recuperarContrasena) window.recuperarContrasena();
+  }
+  function mostrarLoginFallback() {
+    document.getElementById('screen-ciudadano').style.display='none';
+    document.getElementById('screen-bombero').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('tab-bar-bombero').style.display='none';
+  }
+  function mostrarCiudadanoFallback() {
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('screen-bombero').style.display='none';
+    document.getElementById('screen-ciudadano').style.display='block';
+    document.getElementById('tab-bar-bombero').style.display='none';
+  }
 </script>
 <!-- Leaflet para OpenStreetMap -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
