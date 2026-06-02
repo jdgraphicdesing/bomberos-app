@@ -514,6 +514,7 @@
       <div style="display:flex;align-items:center;gap:8px;">
         <div class="dash-pill"><div class="dash-dot"></div><span>En línea</span></div>
         <button id="btn-sonido" onclick="toggleSonido()" style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);border-radius:8px;padding:5px 10px;color:#00E676;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;">🔔 Sonido ON</button>
+        <button id="btn-notif" onclick="activarNotificaciones()" style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:8px;padding:5px 10px;color:#FFC107;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;">🔕 Alertas</button>
         <button class="logout-btn" onclick="cerrarSesion()">Salir</button>
       </div>
     </div>
@@ -1156,6 +1157,32 @@
     }
   }
 
+  async function activarNotificaciones() {
+    const btn = document.getElementById('btn-notif');
+    try {
+      const permiso = await Notification.requestPermission();
+      if (permiso === 'granted') {
+        btn.textContent = '🔔 Alertas ON';
+        btn.style.color = '#00E676';
+        btn.style.borderColor = 'rgba(0,230,118,0.3)';
+        btn.style.background = 'rgba(0,230,118,0.1)';
+        // Llamar suscribirNotificaciones del módulo
+        if (window._suscribirNotificaciones) {
+          await window._suscribirNotificaciones();
+        }
+      } else {
+        btn.textContent = '🔕 Denegado';
+        btn.style.color = 'rgba(255,100,100,0.8)';
+      }
+    } catch(e) {
+      console.error('Error activar notificaciones:', e);
+    }
+  }
+
+  window._suscribirNotificaciones = async function() {
+    await suscribirNotificaciones();
+  };
+
   async function suscribirNotificaciones() {
     if (!('Notification' in window)) return;
     try {
@@ -1293,6 +1320,28 @@
   function pedirCierre(id, ubicacion, tipo) {
     if (window._pedirCierreInterno) {
       window._pedirCierreInterno(id, ubicacion, tipo);
+    }
+  }
+
+  async function activarNotificaciones() {
+    const btn = document.getElementById('btn-notif');
+    try {
+      const permiso = await Notification.requestPermission();
+      if (permiso === 'granted') {
+        btn.textContent = '🔔 Alertas ON';
+        btn.style.color = '#00E676';
+        btn.style.borderColor = 'rgba(0,230,118,0.3)';
+        btn.style.background = 'rgba(0,230,118,0.1)';
+        // Llamar suscribirNotificaciones del módulo
+        if (window._suscribirNotificaciones) {
+          await window._suscribirNotificaciones();
+        }
+      } else {
+        btn.textContent = '🔕 Denegado';
+        btn.style.color = 'rgba(255,100,100,0.8)';
+      }
+    } catch(e) {
+      console.error('Error activar notificaciones:', e);
     }
   }
 
