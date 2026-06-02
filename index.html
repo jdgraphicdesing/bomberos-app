@@ -1156,6 +1156,17 @@
     }
   }
 
+  async function suscribirNotificaciones() {
+    if (!('Notification' in window)) return;
+    try {
+      const permiso = await Notification.requestPermission();
+      if (permiso !== 'granted') return;
+      mostrarToast('🔔 Notificaciones activadas', 'ok');
+    } catch(e) {
+      console.log('Error notificaciones:', e);
+    }
+  }
+
   function verMapa(lat, lng, ubicacion, tipo) {
     if (window._verMapaInterno) {
       window._verMapaInterno(lat, lng, ubicacion, tipo);
@@ -1251,6 +1262,9 @@
   };
 </script>
 
+
+
+
 <script>
   // Bridge para hacer funciones del módulo accesibles globalmente
   document.addEventListener('DOMContentLoaded', () => {
@@ -1282,183 +1296,14 @@
     }
   }
 
-  function verMapa(lat, lng, ubicacion, tipo) {
-    if (window._verMapaInterno) {
-      window._verMapaInterno(lat, lng, ubicacion, tipo);
-    }
-  }
-
-  function hacerLoginFallback() {
-    if (window.hacerLogin) {
-      window.hacerLogin();
-    }
-  }
-
-  function recuperarContrasenaFallback() {
-    if (window.recuperarContrasena) {
-      window.recuperarContrasena();
-    }
-  }
-
-  // Sistema de audio con HTML5 - funciona en iOS y Android
-  let sonidoActivado = true;
-
-  // AudioContext para sirena - funciona en celular y laptop
-  let audioCtxSirena = null;
-
-  function getAudioCtxSirena() {
-    if (!audioCtxSirena) {
-      audioCtxSirena = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    return audioCtxSirena;
-  }
-
-  function inicializarAudio() {
-    // Solo inicializar el contexto
-    getAudioCtxSirena();
-  }
-
-  window.sonarAlertaGlobal = function() {
-    if (!sonidoActivado) return;
+  async function suscribirNotificaciones() {
+    if (!('Notification' in window)) return;
     try {
-      if (navigator.vibrate) navigator.vibrate([400,100,400,100,400,100,800,200,800]);
-
-      const ctx = getAudioCtxSirena();
-      ctx.resume();
-
-      function crearCicloSirena(tInicio) {
-        const osc1 = ctx.createOscillator();
-        const gain1 = ctx.createGain();
-        osc1.type = 'sawtooth';
-        osc1.connect(gain1);
-        gain1.connect(ctx.destination);
-
-        const osc2 = ctx.createOscillator();
-        const gain2 = ctx.createGain();
-        osc2.type = 'square';
-        osc2.connect(gain2);
-        gain2.connect(ctx.destination);
-
-        const lfo = ctx.createOscillator();
-        const lfoGain = ctx.createGain();
-        lfo.type = 'sine';
-        lfo.frequency.value = 0.8;
-        lfoGain.gain.value = 280;
-        lfo.connect(lfoGain);
-        lfoGain.connect(osc1.frequency);
-        lfoGain.connect(osc2.frequency);
-
-        osc1.frequency.setValueAtTime(720, ctx.currentTime + tInicio);
-        osc2.frequency.setValueAtTime(360, ctx.currentTime + tInicio);
-
-        gain1.gain.setValueAtTime(0, ctx.currentTime + tInicio);
-        gain1.gain.linearRampToValueAtTime(0.4, ctx.currentTime + tInicio + 0.1);
-        gain1.gain.setValueAtTime(0.4, ctx.currentTime + tInicio + 1.4);
-        gain1.gain.linearRampToValueAtTime(0, ctx.currentTime + tInicio + 1.5);
-
-        gain2.gain.setValueAtTime(0, ctx.currentTime + tInicio);
-        gain2.gain.linearRampToValueAtTime(0.15, ctx.currentTime + tInicio + 0.1);
-        gain2.gain.setValueAtTime(0.15, ctx.currentTime + tInicio + 1.4);
-        gain2.gain.linearRampToValueAtTime(0, ctx.currentTime + tInicio + 1.5);
-
-        lfo.start(ctx.currentTime + tInicio);
-        osc1.start(ctx.currentTime + tInicio);
-        osc2.start(ctx.currentTime + tInicio);
-
-        lfo.stop(ctx.currentTime + tInicio + 1.6);
-        osc1.stop(ctx.currentTime + tInicio + 1.6);
-        osc2.stop(ctx.currentTime + tInicio + 1.6);
-      }
-
-      crearCicloSirena(0.0);
-      crearCicloSirena(1.7);
-      crearCicloSirena(3.4);
-
+      const permiso = await Notification.requestPermission();
+      if (permiso !== 'granted') return;
+      mostrarToast('🔔 Notificaciones activadas', 'ok');
     } catch(e) {
-      console.error('Error sonido:', e);
-    }
-  };
-
-  function tiempoRel(fecha) {
-    const diff=Math.floor((Date.now()-fecha.getTime())/1000);
-    if(diff<60)return'Hace '+diff+' seg';
-    if(diff<3600)return'Hace '+Math.floor(diff/60)+' min';
-    return'Hace '+Math.floor(diff/3600)+' h';
-  }
-
-  // Event delegation para botones dinámicos
-  document.addEventListener('click', async (e) => {
-    // Botón cerrar caso
-    const cerrarBtn = e.target.closest('.cerrar-btn');
-    if (cerrarBtn) {
-      const id = cerrarBtn.dataset.id;
-      const ubicacion = cerrarBtn.dataset.ubicacion;
-      const tipo = cerrarBtn.dataset.tipo;
-      console.log('Cerrar clicked - id:', id, 'ubicacion:', ubicacion, 'tipo:', tipo);
-      console.log('_pedirCierreInterno disponible:', typeof window._pedirCierreInterno);
-      if (id && window._pedirCierreInterno) {
-        await window._pedirCierreInterno(id, ubicacion, tipo);
-      } else if (!id) {
-        console.error('ERROR: data-id no encontrado en el botón');
-      } else {
-        console.error('ERROR: _pedirCierreInterno no disponible');
-      }
-      return;
-    }
-    // Botón ver mapa
-    const mapaBtn = e.target.closest('.ver-mapa-btn');
-    if (mapaBtn) {
-      const lat = parseFloat(mapaBtn.dataset.lat) || 18.4194;
-      const lng = parseFloat(mapaBtn.dataset.lng) || -70.0101;
-      const ubicacion = mapaBtn.dataset.ubicacion;
-      const tipo = mapaBtn.dataset.tipo;
-      if (window._verMapaInterno) {
-        window._verMapaInterno(lat, lng, ubicacion, tipo);
-      }
-      return;
-    }
-  });
-  window.mostrarToast=(msg,tipo)=>{
-    const t=document.getElementById('toast');
-    t.textContent=msg; t.className='toast show '+(tipo||'');
-    setTimeout(()=>t.className='toast',3000);
-  };
-  window.switchSub=(sub,btn)=>{
-    document.querySelectorAll('.tab-sub-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.sub-view').forEach(s=>s.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('sub-'+sub).classList.add('active');
-  };
-</script>
-
-<script>
-  // Bridge para hacer funciones del módulo accesibles globalmente
-  document.addEventListener('DOMContentLoaded', () => {
-    // Verificar que las funciones existen
-    if (typeof window.mostrarLogin !== 'function') {
-      console.error('mostrarLogin no está disponible');
-    }
-  });
-  
-  // Fallback directo por si el módulo tarda en cargar
-  function mostrarLoginFallback() {
-    document.getElementById('screen-ciudadano').style.display = 'none';
-    document.getElementById('screen-bombero').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('login-screen').style.flexDirection = 'column';
-  }
-
-  function mostrarCiudadanoFallback() {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('screen-bombero').style.display = 'none';
-    document.getElementById('screen-ciudadano').style.display = 'block';
-    document.getElementById('tab-bar-bombero').style.display = 'none';
-  }
-
-  // Bridge para pedirCierre y verMapa - accesibles desde onclick en HTML dinámico
-  function pedirCierre(id, ubicacion, tipo) {
-    if (window._pedirCierreInterno) {
-      window._pedirCierreInterno(id, ubicacion, tipo);
+      console.log('Error notificaciones:', e);
     }
   }
 
@@ -1729,41 +1574,4 @@
   };
 </script>
 </body>
-</html>  async function suscribirNotificaciones() {
-    if (!messaging) { console.log('Messaging no disponible'); return; }
-    try {
-      const permiso = await Notification.requestPermission();
-      console.log('Permiso notificaciones:', permiso);
-      if (permiso !== 'granted') { 
-        console.log('Permiso denegado');
-        return; 
-      }
-
-      const token = await getToken(messaging, {
-        vapidKey: 'BI_FJQ3T0OcZT5NV39rRXBLtqGOcU9TWR59vBCKvZMVR_Gx4OdWHodWDKTV5_DrTdlCNosgQgPSSpWlefgphACk'
-      });
-
-      if (token) {
-        console.log('Token FCM obtenido');
-        const user = auth.currentUser;
-        if (user) {
-          await addDoc(collection(db, 'fcm_tokens'), {
-            token: token,
-            uid: user.uid,
-            email: user.email,
-            timestamp: serverTimestamp()
-          });
-          mostrarToast('🔔 Notificaciones activadas', 'ok');
-        }
-      }
-
-      onMessage(messaging, (payload) => {
-        if (window.sonarAlertaGlobal) window.sonarAlertaGlobal();
-      });
-
-    } catch(e) {
-      console.error('Error suscribirNotificaciones:', e);
-    }
-  }
-
-
+</html>
