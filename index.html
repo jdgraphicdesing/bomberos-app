@@ -1157,26 +1157,20 @@
     }
   }
 
-  async function activarNotificaciones() {
+  function activarNotificaciones() {
     const btn = document.getElementById('btn-notif');
-    try {
-      const permiso = await Notification.requestPermission();
+    // Llamar directamente sin async para iOS
+    Notification.requestPermission(function(permiso) {
       if (permiso === 'granted') {
         btn.textContent = '🔔 Alertas ON';
         btn.style.color = '#00E676';
         btn.style.borderColor = 'rgba(0,230,118,0.3)';
         btn.style.background = 'rgba(0,230,118,0.1)';
-        // Llamar suscribirNotificaciones del módulo
-        if (window._suscribirNotificaciones) {
-          await window._suscribirNotificaciones();
-        }
       } else {
         btn.textContent = '🔕 Denegado';
         btn.style.color = 'rgba(255,100,100,0.8)';
       }
-    } catch(e) {
-      console.error('Error activar notificaciones:', e);
-    }
+    });
   }
 
   window._suscribirNotificaciones = async function() {
@@ -1323,26 +1317,20 @@
     }
   }
 
-  async function activarNotificaciones() {
+  function activarNotificaciones() {
     const btn = document.getElementById('btn-notif');
-    try {
-      const permiso = await Notification.requestPermission();
+    // Llamar directamente sin async para iOS
+    Notification.requestPermission(function(permiso) {
       if (permiso === 'granted') {
         btn.textContent = '🔔 Alertas ON';
         btn.style.color = '#00E676';
         btn.style.borderColor = 'rgba(0,230,118,0.3)';
         btn.style.background = 'rgba(0,230,118,0.1)';
-        // Llamar suscribirNotificaciones del módulo
-        if (window._suscribirNotificaciones) {
-          await window._suscribirNotificaciones();
-        }
       } else {
         btn.textContent = '🔕 Denegado';
         btn.style.color = 'rgba(255,100,100,0.8)';
       }
-    } catch(e) {
-      console.error('Error activar notificaciones:', e);
-    }
+    });
   }
 
   async function suscribirNotificaciones() {
