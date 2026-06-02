@@ -1178,19 +1178,49 @@
   }
 
   window._suscribirNotificaciones = async function() {
-    await suscribirNotificaciones();
-  };
-
-  async function suscribirNotificaciones() {
-    if (!('Notification' in window)) return;
     try {
-      const permiso = await Notification.requestPermission();
-      if (permiso !== 'granted') return;
-      mostrarToast('🔔 Notificaciones activadas', 'ok');
+      // Registrar Service Worker
+      if (!('serviceWorker' in navigator)) {
+        mostrarToast('❌ Service Worker no soportado', 'error');
+        return;
+      }
+      const reg = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+      console.log('SW registrado:', reg.scope);
+
+      // Obtener token FCM
+      const token = await getToken(messaging, {
+        vapidKey: 'BI_FJQ3T0OcZT5NV39rRXBLtqGOcU9TWR59vBCKvZMVR_Gx4OdWHodWDKTV5_DrTdlCNosgQgPSSpWlefgphACk',
+        serviceWorkerRegistration: reg
+      });
+
+      if (token) {
+        console.log('Token FCM:', token.substring(0,20));
+        const user = auth.currentUser;
+        if (user) {
+          // Guardar token en Firestore
+          await addDoc(collection(db, 'fcm_tokens'), {
+            token: token,
+            uid: user.uid,
+            email: user.email,
+            plataforma: /iPhone|iPad|iPod/.test(navigator.userAgent) ? 'iOS' : 'Android',
+            timestamp: serverTimestamp()
+          });
+          mostrarToast('🔔 Notificaciones activadas', 'ok');
+        }
+      } else {
+        mostrarToast('⚠️ No se pudo obtener token', 'error');
+      }
+
+      // Escuchar mensajes en primer plano
+      onMessage(messaging, () => {
+        if (window.sonarAlertaGlobal) window.sonarAlertaGlobal();
+      });
+
     } catch(e) {
-      console.log('Error notificaciones:', e);
+      console.error('Error push:', e);
+      mostrarToast('⚠️ ' + e.message, 'error');
     }
-  }
+  };
 
   function verMapa(lat, lng, ubicacion, tipo) {
     if (window._verMapaInterno) {
