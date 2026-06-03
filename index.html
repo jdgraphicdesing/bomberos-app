@@ -637,6 +637,13 @@
       <div style="font-size:13px;font-weight:600;color:#C62828;text-transform:uppercase;letter-spacing:0.1em;margin-top:6px;">Reporte Oficial de Incidente</div>
     </div>
 
+    <!-- BOTONES - visibles arriba para fácil acceso -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <button onclick="window.print()" style="flex:1;min-width:140px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:11px;color:#fff;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;">🖨️ Imprimir</button>
+      <button onclick="compartirPDF('whatsapp')" style="flex:1;min-width:140px;background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.3);border-radius:10px;padding:11px;color:#25D366;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;">📱 WhatsApp</button>
+      <button onclick="compartirPDF('email')" style="flex:1;min-width:140px;background:rgba(41,182,246,0.15);border:1px solid rgba(41,182,246,0.3);border-radius:10px;padding:11px;color:#29b6f6;font-size:12px;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;">✉️ Correo</button>
+    </div>
+
     <div id="hist-detalle"></div>
 
     <!-- PIE DE PÁGINA - solo visible al imprimir -->
@@ -657,13 +664,7 @@
       </div>
     </div>
 
-    <!-- BOTONES DE ACCIÓN -->
-    <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
-      <button onclick="window.print()" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:13px;color:#fff;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">🖨️ Imprimir reporte</button>
-      <button onclick="compartirPDF('whatsapp')" style="width:100%;background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.3);border-radius:12px;padding:13px;color:#25D366;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">📱 Enviar por WhatsApp</button>
-      <button onclick="compartirPDF('email')" style="width:100%;background:rgba(41,182,246,0.15);border:1px solid rgba(41,182,246,0.3);border-radius:12px;padding:13px;color:#29b6f6;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">✉️ Enviar por correo</button>
-      <button class="btn-secondary" style="margin-top:0;" onclick="document.getElementById('overlay-historial').classList.remove('show')">Cerrar</button>
-    </div>
+    <button class="btn-secondary" style="margin-top:16px;" onclick="document.getElementById('overlay-historial').classList.remove('show')">Cerrar</button>
   </div>
 </div>
 
@@ -1116,7 +1117,7 @@
     const ubicacion = a.ubicacion || '—';
     const durMin = r.duracion ? r.duracion + ' min de atención' : '';
     const equipoHTML = r.equipo ? '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Equipo</div><div style="font-size:13px;color:#fff;margin-bottom:12px;">👥 ' + r.equipo + '</div>' : '';
-    const notasHTML = r.notas ? '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Observaciones</div><div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;font-size:13px;color:#fff;line-height:1.5;">' + r.notas + '</div>' : '';
+    const notasHTML = r.notas ? '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Observaciones</div><div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;font-size:13px;color:#fff;line-height:1.5;word-break:break-word;overflow-wrap:break-word;white-space:pre-wrap;">' + r.notas + '</div>' : '';
 
     document.getElementById('hist-detalle').innerHTML =
       '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">' +
