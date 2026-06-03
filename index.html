@@ -320,6 +320,29 @@
   .ver-mapa-btn { width: 100%; background: linear-gradient(145deg, #1976D2, #0D47A1); border: none; border-radius: 10px; padding: 10px; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; box-shadow: 0 4px 0 #002171; transition: all 0.1s; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .ver-mapa-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #002171; }
 
+  /* IMPRESIÓN */
+  @media print {
+    body { background: #fff !important; color: #000 !important; }
+    .tab-bar, .dash-header, #tab-bar-bombero, .cerrar-btn, .ver-mapa-btn,
+    .btn-secondary, #btn-imprimir, .overlay, .toast { display: none !important; }
+    .overlay.show { display: block !important; position: relative !important; 
+      background: none !important; }
+    .sheet { border-radius: 0 !important; padding: 0 !important; 
+      background: #fff !important; color: #000 !important; max-height: none !important; }
+    .sheet-handle { display: none !important; }
+    * { color: #000 !important; background: #fff !important; 
+      border-color: #ccc !important; }
+    .badge { border: 1px solid #ccc !important; }
+  }
+
+  #btn-imprimir {
+    width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px; padding: 13px; color: #fff; font-size: 13px; cursor: pointer;
+    font-family: 'Inter', sans-serif; margin-top: 10px; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  #btn-imprimir:hover { background: rgba(255,255,255,0.15); }
+
   /* MÓVIL */
   html { -webkit-text-size-adjust: 100%; }
   body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
@@ -1038,7 +1061,9 @@
     const labelRes = {resuelto:'Resuelto exitosamente', parcial:'Resuelto parcialmente', derivado:'Derivado a otra unidad'};
     const ts = a.timestamp ? new Date(a.timestamp.seconds * 1000) : new Date();
     const hora = ts.toLocaleTimeString('es-DO', {hour:'2-digit', minute:'2-digit'});
-    const horaLlegada = r.horaDespacho ? new Date(new Date(r.horaDespacho).getTime()+7*60000).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}) : '--';
+    // Calcular llegada como timestamp de alerta + 7 minutos
+    const tsAlerta = a.timestamp ? new Date(a.timestamp.seconds * 1000) : new Date();
+    const horaLlegada = new Date(tsAlerta.getTime() + 7*60000).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'});
     const horaCierre = r.horaCierre ? new Date(r.horaCierre).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}) : '--';
     const tipo = a.tipo || 'otro';
     const ubicacion = a.ubicacion || '—';
@@ -1361,6 +1386,10 @@
   // ===== BRIDGE =====
   function pedirCierre(id, ubicacion, tipo) {
     if (window._pedirCierreInterno) window._pedirCierreInterno(id, ubicacion, tipo);
+  }
+
+  function imprimirReporte() {
+    window.print();
   }
   function verMapa(lat, lng, ubicacion, tipo) {
     if (window._verMapaInterno) window._verMapaInterno(lat, lng, ubicacion, tipo);
