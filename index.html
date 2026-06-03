@@ -324,7 +324,7 @@
   @media print {
     body { background: #fff !important; color: #000 !important; }
     .tab-bar, .dash-header, #tab-bar-bombero, .cerrar-btn, .ver-mapa-btn,
-    .btn-secondary, #btn-imprimir, .overlay, .toast { display: none !important; }
+    .btn-secondary, #btn-imprimir-ocultar, .overlay, .toast { display: none !important; }
     .overlay.show { display: block !important; position: relative !important; 
       background: none !important; }
     .sheet { border-radius: 0 !important; padding: 0 !important; 
@@ -1062,9 +1062,7 @@
     const labelRes = {resuelto:'Resuelto exitosamente', parcial:'Resuelto parcialmente', derivado:'Derivado a otra unidad'};
     const ts = a.timestamp ? new Date(a.timestamp.seconds * 1000) : new Date();
     const hora = ts.toLocaleTimeString('es-DO', {hour:'2-digit', minute:'2-digit'});
-    // Calcular llegada como timestamp de alerta + 7 minutos
-    const tsAlerta = a.timestamp ? new Date(a.timestamp.seconds * 1000) : new Date();
-    const horaLlegada = new Date(tsAlerta.getTime() + 7*60000).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'});
+    const horaLlegada = r.horaDespacho ? new Date(r.horaDespacho).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}) : '--';
     const horaCierre = r.horaCierre ? new Date(r.horaCierre).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}) : '--';
     const tipo = a.tipo || 'otro';
     const ubicacion = a.ubicacion || '—';
@@ -1096,7 +1094,7 @@
       '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Línea de tiempo</div>' +
       '<div style="margin-bottom:14px;">' +
         '<div class="tl-item"><div class="tl-left"><div class="tl-dot red"></div><div class="tl-line"></div></div><div><div class="tl-time">' + hora + '</div><div class="tl-event">Alerta recibida</div></div></div>' +
-        '<div class="tl-item"><div class="tl-left"><div class="tl-dot green"></div><div class="tl-line"></div></div><div><div class="tl-time">' + horaLlegada + '</div><div class="tl-event">Llegada al lugar</div></div></div>' +
+        (r.horaDespacho ? '<div class="tl-item"><div class="tl-left"><div class="tl-dot green"></div><div class="tl-line"></div></div><div><div class="tl-time">' + horaLlegada + '</div><div class="tl-event">Unidad despachada</div></div></div>' : '') +
         '<div class="tl-item"><div class="tl-left"><div class="tl-dot green"></div></div><div><div class="tl-time">' + horaCierre + '</div><div class="tl-event">Caso cerrado</div></div></div>' +
       '</div>' +
       equipoHTML + notasHTML;
