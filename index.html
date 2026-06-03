@@ -614,7 +614,8 @@
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div id="hist-detalle"></div>
-    <button class="btn-secondary" style="margin-top:12px;" onclick="document.getElementById('overlay-historial').classList.remove('show')">Cerrar</button>
+    <button id="btn-imprimir" onclick="window.print()" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:13px;color:#fff;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">🖨️ Imprimir reporte</button>
+    <button class="btn-secondary" style="margin-top:0;" onclick="document.getElementById('overlay-historial').classList.remove('show')">Cerrar</button>
   </div>
 </div>
 
