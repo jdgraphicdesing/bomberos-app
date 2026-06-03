@@ -272,7 +272,7 @@
   /* OVERLAY */
   .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: flex-end; justify-content: center; }
   .overlay.show { display: flex; }
-  .sheet { background: linear-gradient(180deg, #1B2A3B, #0D1B2A); border-radius: 24px 24px 0 0; padding: 20px 18px 36px; width: 100%; max-width: 480px; border-top: 1px solid rgba(255,255,255,0.15); animation: slideUp 0.25s ease; max-height: 90vh; overflow-y: auto; }
+  .sheet { background: linear-gradient(180deg, #1B2A3B, #0D1B2A); border-radius: 24px 24px 0 0; padding: 20px 18px 36px; width: 100%; max-width: 480px; border-top: 1px solid rgba(255,255,255,0.15); animation: slideUp 0.25s ease; max-height: 90vh; overflow-y: auto; overflow-x: hidden; }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .sheet-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 99px; margin: 0 auto 18px; }
   .sheet-title { font-size: 20px; font-weight: 700; color: #fff; font-family: 'Rajdhani', sans-serif; margin-bottom: 4px; }
@@ -322,27 +322,23 @@
 
   /* IMPRESIÓN */
   @media print {
-    @page { size: letter; margin: 2cm; }
-    body * { visibility: hidden; }
-    #overlay-historial, #overlay-historial * { visibility: visible; }
-    #overlay-historial {
-      position: fixed !important; top: 0 !important; left: 0 !important;
-      width: 100% !important; height: auto !important;
-      background: #fff !important; display: block !important;
-      padding: 0 !important;
-    }
+    @page { size: letter portrait; margin: 1.5cm; }
+    body { margin: 0 !important; padding: 0 !important; }
+    body > * { display: none !important; }
+    #overlay-historial { display: block !important; position: static !important; background: #fff !important; width: 100% !important; }
+    #overlay-historial .overlay { display: block !important; position: static !important; background: none !important; }
     .sheet {
       background: #fff !important; color: #000 !important;
-      border-radius: 0 !important; padding: 0 !important;
-      max-height: none !important; box-shadow: none !important;
-      position: relative !important;
+      border-radius: 0 !important; padding: 10px !important;
+      max-height: none !important; overflow: visible !important;
+      box-shadow: none !important; width: 100% !important; max-width: 100% !important;
     }
-    .sheet-handle, #btn-imprimir, .btn-secondary { display: none !important; }
+    .sheet-handle { display: none !important; }
+    [onclick="window.print()"], [onclick*="compartirPDF"], .btn-secondary { display: none !important; }
     #print-header { display: block !important; }
     #print-footer { display: block !important; }
-    * { color: #000 !important; }
-    .badge { border: 1px solid #999 !important; color: #000 !important; }
-    #hist-detalle > div:first-child { border-bottom: 2px solid #C62828 !important; padding-bottom: 12px !important; margin-bottom: 12px !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    #hist-detalle { overflow: visible !important; }
   }
 
   #btn-imprimir {
