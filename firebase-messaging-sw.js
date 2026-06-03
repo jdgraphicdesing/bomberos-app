@@ -12,16 +12,29 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Mostrar notificación cuando la app está en segundo plano o cerrada
 messaging.onBackgroundMessage((payload) => {
-  console.log('Notificación en background:', payload);
-  const { title, body } = payload.notification;
+  const title = payload.notification?.title || '🚨 ALERTA NUEVA — Bomberos Haina';
+  const body = payload.notification?.body || 'Nueva emergencia reportada';
+  
   self.registration.showNotification(title, {
     body: body,
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: '/bomberos-app/icon-192.png',
+    badge: '/bomberos-app/icon-192.png',
     tag: 'alerta-bomberos',
+    renotify: true,
     requireInteraction: true,
-    vibrate: [400, 100, 400, 100, 400, 100, 800]
+    silent: false,
+    vibrate: [400, 100, 400, 100, 400, 100, 800],
+    actions: [
+      { action: 'abrir', title: '🚒 Ver alerta' }
+    ]
   });
+});
+
+// Abrir la app al tocar la notificación
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow('https://jdgraphicdesing.github.io/bomberos-app/')
+  );
 });
