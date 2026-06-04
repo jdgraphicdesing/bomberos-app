@@ -646,7 +646,7 @@ input,select,textarea{font-size:16px!important;}
 </div>
 
 <!-- ===== PANTALLA DETALLE ALERTA ===== -->
-<div id="screen-detalle">
+<div id="screen-detalle" style="display:none;">
   <div class="detalle-header">
     <button class="btn-back" onclick="cerrarDetalle()">←</button>
     <div class="detalle-header-info">
@@ -1016,7 +1016,7 @@ input,select,textarea{font-size:16px!important;}
     }
 
     document.getElementById('det-body').innerHTML = bodyHTML;
-    document.getElementById('screen-detalle').classList.add('active');
+    document.getElementById('screen-detalle').style.display='block';
     window.scrollTo({top:0,behavior:'smooth'});
 
     // Inicializar mapa
@@ -1094,7 +1094,7 @@ input,select,textarea{font-size:16px!important;}
       });
       toast('✅ Caso cerrado y reporte guardado','ok');
       document.getElementById('overlay-reporte').classList.remove('show');
-      document.getElementById('screen-detalle').classList.remove('active');
+      document.getElementById('screen-detalle').style.display='none';
       alertaActual=null;
     } catch(e) { toast('❌ Error al guardar','err'); }
     btn.disabled=false; btn.textContent='✅ Guardar y cerrar caso';
@@ -1288,7 +1288,7 @@ function switchSub(sub, btn) {
 }
 
 function cerrarDetalle() {
-  document.getElementById('screen-detalle').classList.remove('active');
+  document.getElementById('screen-detalle').style.display='none';
 }
 
 function irALogin() {
