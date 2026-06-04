@@ -194,7 +194,7 @@ input,select,textarea{font-size:16px!important;}
 .info-label{font-size:12px;color:var(--muted);flex-shrink:0;}
 .info-value{font-size:13px;color:#fff;font-weight:500;text-align:right;word-break:break-word;overflow-wrap:break-word;max-width:60%;;word-break:break-word;overflow-wrap:break-word;max-width:65%;}
 .mapa-container{border-radius:14px;overflow:hidden;height:220px;border:1px solid var(--border);}
-.detalle-actions{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+.detalle-actions{display:flex;flex-direction:column;gap:10px;margin-top:8px;padding-bottom:60px;}
 .btn-cerrar{
   background:linear-gradient(135deg,#2E7D32,#1B5E20);
   border:none;border-radius:14px;padding:16px;color:#fff;
@@ -933,25 +933,25 @@ input,select,textarea{font-size:16px!important;}
     const d = a.detalles||{};
     const filas = [];
     if (tipo==='incendio') {
-      if (d.estructuras) filas.push(['🏠 Estructuras', d.estructuras]);
-      if (d.personas) filas.push(['👤 Personas atrapadas', d.personas]);
-      if (d.materiales) filas.push(['☣️ Mat. peligrosos', 'Sí']);
-      if (d.electrico) filas.push(['⚡ Cables eléctricos', 'Sí']);
+      filas.push(['🏠 Estructuras afectadas', d.estructuras||0]);
+      filas.push(['👤 Personas atrapadas', d.personas||0]);
+      filas.push(['☣️ Mat. peligrosos', d.materiales?'Sí':'No']);
+      filas.push(['⚡ Cables eléctricos', d.electrico?'Sí':'No']);
     } else if (tipo==='accidente') {
-      if (d.vehiculos) filas.push(['🚘 Vehículos', d.vehiculos]);
-      if (d.heridos) filas.push(['🤕 Heridos', d.heridos]);
-      if (d.atrapados) filas.push(['🆘 Atrapados', 'Sí']);
-      if (d.combustible) filas.push(['🛢️ Derrame', 'Sí']);
+      filas.push(['🚘 Vehículos involucrados', d.vehiculos||0]);
+      filas.push(['🤕 Personas heridas', d.heridos||0]);
+      filas.push(['🆘 Personas atrapadas', d.atrapados?'Sí':'No']);
+      filas.push(['🛢️ Derrame de combustible', d.combustible?'Sí':'No']);
     } else if (tipo==='rescate') {
-      if (d.personas) filas.push(['👤 A rescatar', d.personas]);
-      filas.push(['💬 Consciente', d.consciente?'Sí':'No']);
-      if (d.altura) filas.push(['🏗️ En altura', 'Sí']);
+      filas.push(['👤 Personas a rescatar', d.personas||0]);
+      filas.push(['💬 Persona consciente', d.consciente?'Sí':'No']);
+      filas.push(['🏗️ Rescate en altura', d.altura?'Sí':'No']);
     } else if (tipo==='acuatico') {
-      if (d.personas) filas.push(['🏊 En el agua', d.personas]);
-      filas.push(['🔴 Salvavidas', d.salvavidas?'Sí':'No']);
-      if (d.corriente) filas.push(['🌀 Corriente', 'Fuerte']);
+      filas.push(['🏊 Personas en el agua', d.personas||0]);
+      filas.push(['🔴 Tiene salvavidas', d.salvavidas?'Sí':'No']);
+      filas.push(['🌀 Corriente fuerte', d.corriente?'Sí':'No']);
     }
-    if (d.notas) filas.push(['📝 Notas', d.notas]);
+    if (d.notas && d.notas.trim()) filas.push(['📝 Notas del ciudadano', d.notas]);
 
     if (filas.length > 0) {
       bodyHTML += '<div class="detalle-section"><div class="section-title">Información del reporte</div><div class="info-card">';
