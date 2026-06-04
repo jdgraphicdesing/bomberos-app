@@ -811,8 +811,9 @@ input,select,textarea{font-size:16px!important;}
     btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Enviando...';
     try {
       const detalles = window._getDetalles ? window._getDetalles() : {};
+      const tipo = window._tipoActual || tipoSeleccionado || 'otro';
       await addDoc(collection(db,'alertas'),{
-        tipo:tipoSeleccionado, ubicacion:coordenadas.texto,
+        tipo:tipo, ubicacion:coordenadas.texto,
         lat:coordenadas.lat, lng:coordenadas.lng,
         estado:'nueva', detalles, timestamp:serverTimestamp()
       });
@@ -1460,7 +1461,15 @@ function actualizarResumen() {
 }
 
 function enviarAlerta() {
-  if (window._enviarAlerta) window._enviarAlerta();
+  if (window._enviarAlerta) {
+    window._enviarAlerta();
+  } else {
+    // Módulo no cargó aún - mostrar error
+    const t = document.getElementById('toast');
+    t.textContent = '⏳ Cargando... intenta de nuevo';
+    t.className = 'toast show err';
+    setTimeout(()=>t.className='toast', 3000);
+  }
 }
 
 function resetCiudadano() {
