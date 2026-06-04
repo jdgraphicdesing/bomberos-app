@@ -26,13 +26,15 @@ body{
   font-family:'Inter',sans-serif;
   -webkit-tap-highlight-color:transparent;
   overscroll-behavior:none;
+  padding-top:env(safe-area-inset-top);
 }
 input,select,textarea{font-size:16px!important;}
 
 /* ===== TABS ===== */
 .tab-bar{
   width:100%;display:flex;background:rgba(0,0,0,0.3);
-  padding:6px;gap:6px;position:sticky;top:0;z-index:10;
+  padding:6px;padding-top:calc(6px + env(safe-area-inset-top));
+  gap:6px;position:sticky;top:0;z-index:10;
   border-bottom:1px solid var(--border);backdrop-filter:blur(10px);
 }
 .tab-btn{
