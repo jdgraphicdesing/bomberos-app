@@ -811,8 +811,8 @@ input,select,textarea{font-size:16px!important;}
 
   // ===== ENVIAR ALERTA CIUDADANO =====
   window._enviarAlerta = async () => {
-    const btn = document.getElementById('send-btn');
-    btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Enviando...';
+    const btn = document.getElementById('sos-btn');
+    btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
     try {
       const detalles = window._getDetalles ? window._getDetalles() : {};
       const tipo = window._tipoActual || tipoSeleccionado || 'otro';
@@ -826,7 +826,7 @@ input,select,textarea{font-size:16px!important;}
       toast('✅ Alerta enviada a los bomberos','ok');
     } catch(e) {
       toast('❌ Error al enviar. Intenta de nuevo.','err');
-      btn.disabled=false; btn.innerHTML='🚒 Enviar alerta de emergencia';
+      btn.disabled=false; btn.innerHTML='🚨<span class="sos-label">SOS</span>';
     }
   };
 
