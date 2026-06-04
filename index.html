@@ -1026,10 +1026,16 @@ input,select,textarea{font-size:16px!important;}
     setTimeout(()=>{
       if (mapaActivo) { mapaActivo.remove(); mapaActivo=null; }
       const lat = a.lat||18.4194, lng = a.lng||-70.0101;
-      const m = L.map('mapa-det').setView([lat,lng],15);
+      const estLat = 18.4194, estLng = -70.0101;
+      const m = L.map('mapa-det').fitBounds([[lat,lng],[estLat,estLng]],{padding:[30,30]});
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
-      L.marker([lat,lng]).addTo(m).bindPopup('📍 '+(a.ubicacion||'Emergencia')).openPopup();
-      L.marker([18.4194,-70.0101],{icon:L.divIcon({html:'🚒',iconSize:[30,30]})}).addTo(m);
+      L.marker([lat,lng]).addTo(m).bindPopup('📍 Emergencia').openPopup();
+      L.marker([estLat,estLng],{icon:L.divIcon({html:'🚒',iconSize:[30,30],className:''})}).addTo(m).bindPopup('🚒 Estación Haina');
+      L.polyline([[estLat,estLng],[lat,lng]],{color:'red',weight:3,dashArray:'8,8'}).addTo(m);
+      m.getContainer().style.cursor='pointer';
+      m.getContainer().addEventListener('click',function(){
+        window.open('https://www.google.com/maps/dir/?api=1&origin='+estLat+','+estLng+'&destination='+lat+','+lng+'&travelmode=driving','_blank');
+      });
       mapaActivo = m;
     },300);
   };
