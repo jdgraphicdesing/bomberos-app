@@ -90,12 +90,10 @@ input,select,textarea{font-size:16px!important;}
 .pill-btn{
   border:1px solid rgba(255,255,255,0.25);border-radius:8px;
   padding:7px 10px;font-size:11px;cursor:pointer;
-  font-family:'Inter',sans-serif;min-height:44px;
+  font-family:'Inter',sans-serif;min-height:34px;
   display:flex;align-items:center;gap:5px;
   background:rgba(255,255,255,0.1);color:#fff;
   transition:all 0.15s;white-space:nowrap;
-  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
-  position:relative;z-index:10;
 }
 .pill-btn:active{opacity:0.7;}
 .pill-btn.green{color:var(--green);border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.1);}
@@ -188,13 +186,13 @@ input,select,textarea{font-size:16px!important;}
 .detalle-section{margin-bottom:18px;}
 .section-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;}
 .info-card{background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:14px;padding:14px;}
-.info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);gap:8px;overflow:hidden;}
+.info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);gap:8px;}
 .info-row:last-child{border-bottom:none;padding-bottom:0;}
 .info-row:first-child{padding-top:0;}
 .info-label{font-size:12px;color:var(--muted);flex-shrink:0;}
-.info-value{font-size:13px;color:#fff;font-weight:500;text-align:right;word-break:break-word;overflow-wrap:break-word;max-width:60%;;word-break:break-word;overflow-wrap:break-word;max-width:65%;}
+.info-value{font-size:13px;color:#fff;font-weight:500;text-align:right;word-break:break-word;overflow-wrap:break-word;max-width:60%;}
 .mapa-container{border-radius:14px;overflow:hidden;height:220px;border:1px solid var(--border);}
-.detalle-actions{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+.detalle-actions{display:flex;flex-direction:column;gap:10px;margin-top:8px;padding-bottom:40px;}
 .btn-cerrar{
   background:linear-gradient(135deg,#2E7D32,#1B5E20);
   border:none;border-radius:14px;padding:16px;color:#fff;
@@ -813,9 +811,8 @@ input,select,textarea{font-size:16px!important;}
     btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Enviando...';
     try {
       const detalles = window._getDetalles ? window._getDetalles() : {};
-      const tipo = window._tipoActual || tipoSeleccionado || 'otro';
       await addDoc(collection(db,'alertas'),{
-        tipo:tipo, ubicacion:coordenadas.texto,
+        tipo:tipoSeleccionado, ubicacion:coordenadas.texto,
         lat:coordenadas.lat, lng:coordenadas.lng,
         estado:'nueva', detalles, timestamp:serverTimestamp()
       });
@@ -850,7 +847,7 @@ input,select,textarea{font-size:16px!important;}
             alertasSonadas.add(a.id);
             if (window._sonar) window._sonar();
             if (window._notificar) window._notificar(a.tipo, a.ubicacion||'');
-            document.title = '🚨 ALERTA - Bomberos';
+            document.title = '🚨 ALERTA — Bomberos';
             setTimeout(()=>document.title='Bomberos Haina',5000);
           }
         });
@@ -870,7 +867,7 @@ input,select,textarea{font-size:16px!important;}
     el.innerHTML = lista.map(a=>{
       const tipo = a.tipo||'otro';
       const tiempo = a.timestamp ? tiempoRel(a.timestamp.toDate()) : 'Ahora';
-      return '<div class="alerta-card nueva" onclick="_abrirDetalle(&quot;'+a.id+'&quot;)">' +
+      return '<div class="alerta-card nueva" onclick="_abrirDetalle(''+a.id+'')">' +
         '<div class="alerta-top">' +
         '<div class="alerta-icon '+CLASES[tipo]+'">'+ICONOS[tipo]+'</div>' +
         '<div class="alerta-info">' +
@@ -895,7 +892,7 @@ input,select,textarea{font-size:16px!important;}
       const tipo = a.tipo||'otro';
       const r = a.reporte||{};
       const tiempo = a.timestamp ? tiempoRel(a.timestamp.toDate()) : '';
-      return '<div class="alerta-card cerrada" onclick="_abrirDetalle(&quot;'+a.id+'&quot;)">' +
+      return '<div class="alerta-card cerrada" onclick="_abrirDetalle(''+a.id+'')">' +
         '<div class="alerta-top">' +
         '<div class="alerta-icon '+CLASES[tipo]+'">'+ICONOS[tipo]+'</div>' +
         '<div class="alerta-info">' +
@@ -933,25 +930,25 @@ input,select,textarea{font-size:16px!important;}
     const d = a.detalles||{};
     const filas = [];
     if (tipo==='incendio') {
-      if (d.estructuras) filas.push(['🏠 Estructuras', d.estructuras]);
-      if (d.personas) filas.push(['👤 Personas atrapadas', d.personas]);
-      if (d.materiales) filas.push(['☣️ Mat. peligrosos', 'Sí']);
-      if (d.electrico) filas.push(['⚡ Cables eléctricos', 'Sí']);
+      filas.push(['🏠 Estructuras afectadas', d.estructuras||0]);
+      filas.push(['👤 Personas atrapadas', d.personas||0]);
+      filas.push(['☣️ Mat. peligrosos', d.materiales?'Sí':'No']);
+      filas.push(['⚡ Cables eléctricos', d.electrico?'Sí':'No']);
     } else if (tipo==='accidente') {
-      if (d.vehiculos) filas.push(['🚘 Vehículos', d.vehiculos]);
-      if (d.heridos) filas.push(['🤕 Heridos', d.heridos]);
-      if (d.atrapados) filas.push(['🆘 Atrapados', 'Sí']);
-      if (d.combustible) filas.push(['🛢️ Derrame', 'Sí']);
+      filas.push(['🚘 Vehículos involucrados', d.vehiculos||0]);
+      filas.push(['🤕 Personas heridas', d.heridos||0]);
+      filas.push(['🆘 Personas atrapadas', d.atrapados?'Sí':'No']);
+      filas.push(['🛢️ Derrame de combustible', d.combustible?'Sí':'No']);
     } else if (tipo==='rescate') {
-      if (d.personas) filas.push(['👤 A rescatar', d.personas]);
-      filas.push(['💬 Consciente', d.consciente?'Sí':'No']);
-      if (d.altura) filas.push(['🏗️ En altura', 'Sí']);
+      filas.push(['👤 Personas a rescatar', d.personas||0]);
+      filas.push(['💬 Persona consciente', d.consciente?'Sí':'No']);
+      filas.push(['🏗️ Rescate en altura', d.altura?'Sí':'No']);
     } else if (tipo==='acuatico') {
-      if (d.personas) filas.push(['🏊 En el agua', d.personas]);
-      filas.push(['🔴 Salvavidas', d.salvavidas?'Sí':'No']);
-      if (d.corriente) filas.push(['🌀 Corriente', 'Fuerte']);
+      filas.push(['🏊 Personas en el agua', d.personas||0]);
+      filas.push(['🔴 Tiene salvavidas', d.salvavidas?'Sí':'No']);
+      filas.push(['🌀 Corriente fuerte', d.corriente?'Sí':'No']);
     }
-    if (d.notas) filas.push(['📝 Notas', d.notas]);
+    if (d.notas && d.notas.trim()) filas.push(['📝 Notas del ciudadano', d.notas]);
 
     if (filas.length > 0) {
       bodyHTML += '<div class="detalle-section"><div class="section-title">Información del reporte</div><div class="info-card">';
@@ -981,8 +978,8 @@ input,select,textarea{font-size:16px!important;}
       // Botones compartir
       bodyHTML += '<div class="hist-actions no-print">';
       bodyHTML += '<button class="hist-btn print" onclick="_imprimirReporte()">🖨️ Imprimir</button>';
-      bodyHTML += '<button class="hist-btn whatsapp" onclick="_compartir(&quot;whatsapp&quot;)">📱 WhatsApp</button>';
-      bodyHTML += '<button class="hist-btn email" onclick="_compartir(&quot;email&quot;)">✉️ Correo</button>';
+      bodyHTML += '<button class="hist-btn whatsapp" onclick="_compartir('whatsapp')">📱 WhatsApp</button>';
+      bodyHTML += '<button class="hist-btn email" onclick="_compartir('email')">✉️ Correo</button>';
       bodyHTML += '</div>';
 
       // Resultado
@@ -1037,7 +1034,7 @@ input,select,textarea{font-size:16px!important;}
   // ===== REPORTE =====
   window._abrirReporte = async () => {
     if (!alertaActual) return;
-    document.getElementById('reporte-sub').textContent = (LABELS[alertaActual.tipo]||'Incidente')+' - '+(alertaActual.ubicacion||'')+'. Completa el reporte para cerrar.';
+    document.getElementById('reporte-sub').textContent = (LABELS[alertaActual.tipo]||'Incidente')+' — '+(alertaActual.ubicacion||'')+'. Completa el reporte para cerrar.';
     ['r-duracion','r-personas','r-notas'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('r-equipo').value='';
 
@@ -1120,16 +1117,16 @@ input,select,textarea{font-size:16px!important;}
       '<div style="font-size:14px;font-weight:700;color:#C62828;letter-spacing:0.1em;">REPORTE OFICIAL DE INCIDENTE</div></div>' +
       '<table style="width:100%;border-collapse:collapse;margin-bottom:16px;">' +
       '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;width:140px;">Tipo</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(ICONOS[tipo]||'')+(LABELS[tipo]||tipo)+'</td></tr>' +
-      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Ubicación</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(a.ubicacion||'-')+'</td></tr>' +
-      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Resultado</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(d.labelRes[r.resultado]||r.resultado||'-')+'</td></tr>' +
+      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Ubicación</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(a.ubicacion||'—')+'</td></tr>' +
+      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Resultado</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(d.labelRes[r.resultado]||r.resultado||'—')+'</td></tr>' +
       '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Personas</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(r.personas||0)+'</td></tr>' +
       '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Duración</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(r.duracion||0)+' minutos</td></tr>' +
       '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Alerta recibida</td><td style="padding:6px 8px;border:1px solid #ddd;">'+d.hora+'</td></tr>' +
       '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Caso cerrado</td><td style="padding:6px 8px;border:1px solid #ddd;">'+d.horaCierre+'</td></tr>' +
-      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Equipo</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(r.equipo||'-')+'</td></tr>' +
+      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Equipo</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(r.equipo||'—')+'</td></tr>' +
       '</table>' +
       '<div style="margin-bottom:20px;"><strong style="font-size:12px;text-transform:uppercase;color:#555;">Observaciones:</strong>' +
-      '<div style="border:1px solid #ddd;border-radius:6px;padding:10px;margin-top:6px;font-size:13px;line-height:1.6;min-height:60px;white-space:pre-wrap;word-break:break-word;">'+(r.notas||'-')+'</div></div>' +
+      '<div style="border:1px solid #ddd;border-radius:6px;padding:10px;margin-top:6px;font-size:13px;line-height:1.6;min-height:60px;white-space:pre-wrap;word-break:break-word;">'+(r.notas||'—')+'</div></div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px;padding-top:16px;border-top:1px solid #ccc;">' +
       '<div><div style="font-size:11px;color:#555;margin-bottom:6px;text-transform:uppercase;">Firma del responsable</div>' +
       '<div style="border-bottom:1px solid #000;height:40px;"></div>' +
@@ -1149,7 +1146,15 @@ input,select,textarea{font-size:16px!important;}
     if (!d) return;
     const r = d.r||{};
     const a = d.a||{};
-    const texto = 'REPORTE OFICIAL BOMBEROS HAINA\n\nIncidente: '+(LABELS[d.tipo]||d.tipo)+'\nUbicacion: '+(a.ubicacion||'N/A')+'\nResultado: '+(d.labelRes&&d.labelRes[r.resultado]?d.labelRes[r.resultado]:r.resultado||'N/A')+'\nDuracion: '+(r.duracion||0)+' min\nEquipo: '+(r.equipo||'N/A')+'\n\nhttps://jdgraphicdesing.github.io/bomberos-app/';
+    const texto = '🚒 *REPORTE OFICIAL - BOMBEROS HAINA*
+
+Incidente: '+(LABELS[d.tipo]||d.tipo)+'
+Ubicación: '+(a.ubicacion||'—')+'
+Resultado: '+(d.labelRes[r.resultado]||r.resultado||'—')+'
+Duración: '+(r.duracion||0)+' min
+Equipo: '+(r.equipo||'—')+'
+
+Ver app: https://jdgraphicdesing.github.io/bomberos-app/';
     if (dest==='whatsapp') {
       if (navigator.share) {
         navigator.share({title:'Reporte Bomberos Haina',text:texto}).catch(()=>{
@@ -1246,7 +1251,7 @@ document.addEventListener('touchstart', function init() {
 window._notificar = function(tipo, ubicacion) {
   if (!('Notification' in window) || Notification.permission!=='granted') return;
   const iconos = {incendio:'🔥',accidente:'🚗',rescate:'🚑',acuatico:'🌊',otro:'⚠️'};
-  new Notification('🚨 ALERTA NUEVA - Bomberos Haina', {
+  new Notification('🚨 ALERTA NUEVA — Bomberos Haina', {
     body: (iconos[tipo]||'⚠️')+' '+(tipo||'').toUpperCase()+' en '+ubicacion,
     tag:'alerta-bomberos', requireInteraction:true, silent:false
   });
@@ -1375,12 +1380,12 @@ function irPaso2() {
 
 function cntRow(lbl, key, def) {
   _detallesData[key] = def;
-  return '<div class="cnt-row"><span class="cnt-lbl">'+lbl+'</span><div class="cnt-ctrl"><button class="cnt-btn" onclick="cambiarCnt(&quot;'+key+'&quot;,-1)">−</button><span class="cnt-val" id="cnt-'+key+'">'+def+'</span><button class="cnt-btn" onclick="cambiarCnt(&quot;'+key+'&quot;,1)">+</button></div></div>';
+  return '<div class="cnt-row"><span class="cnt-lbl">'+lbl+'</span><div class="cnt-ctrl"><button class="cnt-btn" onclick="cambiarCnt(''+key+'',-1)">−</button><span class="cnt-val" id="cnt-'+key+'">'+def+'</span><button class="cnt-btn" onclick="cambiarCnt(''+key+'',1)">+</button></div></div>';
 }
 
 function toggleRow(lbl, key, defOn) {
   _detallesData[key] = defOn||false;
-  return '<div class="toggle-row"><span class="toggle-lbl">'+lbl+'</span><div class="toggle-btn'+(defOn?' on':'')+'" id="tog-'+key+'" onclick="cambiarToggle(&quot;'+key+'&quot;)"><div class="toggle-knob"></div></div></div>';
+  return '<div class="toggle-row"><span class="toggle-lbl">'+lbl+'</span><div class="toggle-btn'+(defOn?' on':'')+'" id="tog-'+key+'" onclick="cambiarToggle(''+key+'')"><div class="toggle-knob"></div></div></div>';
 }
 
 function cambiarCnt(key, delta) {
@@ -1455,15 +1460,7 @@ function actualizarResumen() {
 }
 
 function enviarAlerta() {
-  if (window._enviarAlerta) {
-    window._enviarAlerta();
-  } else {
-    // Módulo no cargó aún - mostrar error
-    const t = document.getElementById('toast');
-    t.textContent = '⏳ Cargando... intenta de nuevo';
-    t.className = 'toast show err';
-    setTimeout(()=>t.className='toast', 3000);
-  }
+  if (window._enviarAlerta) window._enviarAlerta();
 }
 
 function resetCiudadano() {
