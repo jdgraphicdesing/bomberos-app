@@ -847,7 +847,7 @@ input,select,textarea{font-size:16px!important;}
             alertasSonadas.add(a.id);
             if (window._sonar) window._sonar();
             if (window._notificar) window._notificar(a.tipo, a.ubicacion||'');
-            document.title = '🚨 ALERTA — Bomberos';
+            document.title = '🚨 ALERTA - Bomberos';
             setTimeout(()=>document.title='Bomberos Haina',5000);
           }
         });
@@ -1034,7 +1034,7 @@ input,select,textarea{font-size:16px!important;}
   // ===== REPORTE =====
   window._abrirReporte = async () => {
     if (!alertaActual) return;
-    document.getElementById('reporte-sub').textContent = (LABELS[alertaActual.tipo]||'Incidente')+' — '+(alertaActual.ubicacion||'')+'. Completa el reporte para cerrar.';
+    document.getElementById('reporte-sub').textContent = (LABELS[alertaActual.tipo]||'Incidente')+' - '+(alertaActual.ubicacion||'')+'. Completa el reporte para cerrar.';
     ['r-duracion','r-personas','r-notas'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('r-equipo').value='';
 
@@ -1117,16 +1117,16 @@ input,select,textarea{font-size:16px!important;}
       '<div style="font-size:14px;font-weight:700;color:#C62828;letter-spacing:0.1em;">REPORTE OFICIAL DE INCIDENTE</div></div>' +
       '<table style="width:100%;border-collapse:collapse;margin-bottom:16px;">' +
       '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;width:140px;">Tipo</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(ICONOS[tipo]||'')+(LABELS[tipo]||tipo)+'</td></tr>' +
-      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Ubicación</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(a.ubicacion||'—')+'</td></tr>' +
-      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Resultado</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(d.labelRes[r.resultado]||r.resultado||'—')+'</td></tr>' +
+      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Ubicación</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(a.ubicacion||'-')+'</td></tr>' +
+      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Resultado</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(d.labelRes[r.resultado]||r.resultado||'-')+'</td></tr>' +
       '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Personas</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(r.personas||0)+'</td></tr>' +
       '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Duración</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(r.duracion||0)+' minutos</td></tr>' +
       '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Alerta recibida</td><td style="padding:6px 8px;border:1px solid #ddd;">'+d.hora+'</td></tr>' +
       '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Caso cerrado</td><td style="padding:6px 8px;border:1px solid #ddd;">'+d.horaCierre+'</td></tr>' +
-      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Equipo</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(r.equipo||'—')+'</td></tr>' +
+      '<tr><td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;">Equipo</td><td style="padding:6px 8px;border:1px solid #ddd;">'+(r.equipo||'-')+'</td></tr>' +
       '</table>' +
       '<div style="margin-bottom:20px;"><strong style="font-size:12px;text-transform:uppercase;color:#555;">Observaciones:</strong>' +
-      '<div style="border:1px solid #ddd;border-radius:6px;padding:10px;margin-top:6px;font-size:13px;line-height:1.6;min-height:60px;white-space:pre-wrap;word-break:break-word;">'+(r.notas||'—')+'</div></div>' +
+      '<div style="border:1px solid #ddd;border-radius:6px;padding:10px;margin-top:6px;font-size:13px;line-height:1.6;min-height:60px;white-space:pre-wrap;word-break:break-word;">'+(r.notas||'-')+'</div></div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px;padding-top:16px;border-top:1px solid #ccc;">' +
       '<div><div style="font-size:11px;color:#555;margin-bottom:6px;text-transform:uppercase;">Firma del responsable</div>' +
       '<div style="border-bottom:1px solid #000;height:40px;"></div>' +
@@ -1149,10 +1149,10 @@ input,select,textarea{font-size:16px!important;}
     const texto = '🚒 *REPORTE OFICIAL - BOMBEROS HAINA*
 
 Incidente: '+(LABELS[d.tipo]||d.tipo)+'
-Ubicación: '+(a.ubicacion||'—')+'
-Resultado: '+(d.labelRes[r.resultado]||r.resultado||'—')+'
+Ubicación: '+(a.ubicacion||'-')+'
+Resultado: '+(d.labelRes[r.resultado]||r.resultado||'-')+'
 Duración: '+(r.duracion||0)+' min
-Equipo: '+(r.equipo||'—')+'
+Equipo: '+(r.equipo||'-')+'
 
 Ver app: https://jdgraphicdesing.github.io/bomberos-app/';
     if (dest==='whatsapp') {
@@ -1251,7 +1251,7 @@ document.addEventListener('touchstart', function init() {
 window._notificar = function(tipo, ubicacion) {
   if (!('Notification' in window) || Notification.permission!=='granted') return;
   const iconos = {incendio:'🔥',accidente:'🚗',rescate:'🚑',acuatico:'🌊',otro:'⚠️'};
-  new Notification('🚨 ALERTA NUEVA — Bomberos Haina', {
+  new Notification('🚨 ALERTA NUEVA - Bomberos Haina', {
     body: (iconos[tipo]||'⚠️')+' '+(tipo||'').toUpperCase()+' en '+ubicacion,
     tag:'alerta-bomberos', requireInteraction:true, silent:false
   });
@@ -1380,7 +1380,7 @@ function irPaso2() {
 
 function cntRow(lbl, key, def) {
   _detallesData[key] = def;
-  return '<div class="cnt-row"><span class="cnt-lbl">'+lbl+'</span><div class="cnt-ctrl"><button class="cnt-btn" onclick="cambiarCnt(''+key+'',-1)">−</button><span class="cnt-val" id="cnt-'+key+'">'+def+'</span><button class="cnt-btn" onclick="cambiarCnt(''+key+'',1)">+</button></div></div>';
+  return '<div class="cnt-row"><span class="cnt-lbl">'+lbl+'</span><div class="cnt-ctrl"><button class="cnt-btn" onclick="cambiarCnt(''+key+'',-1)">-</button><span class="cnt-val" id="cnt-'+key+'">'+def+'</span><button class="cnt-btn" onclick="cambiarCnt(''+key+'',1)">+</button></div></div>';
 }
 
 function toggleRow(lbl, key, defOn) {
