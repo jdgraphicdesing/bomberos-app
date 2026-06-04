@@ -175,7 +175,8 @@ input,select,textarea{font-size:16px!important;}
 #screen-detalle.active{display:block;}
 .detalle-header{
   background:linear-gradient(135deg,var(--red) 0%,var(--red2) 100%);
-  padding:14px 18px;display:flex;align-items:center;gap:12px;
+  padding:14px 18px;padding-top:calc(14px + env(safe-area-inset-top));
+  display:flex;align-items:center;gap:12px;
   position:sticky;top:0;z-index:10;
 }
 .btn-back{
