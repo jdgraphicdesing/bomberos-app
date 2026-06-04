@@ -867,7 +867,7 @@ input,select,textarea{font-size:16px!important;}
     el.innerHTML = lista.map(a=>{
       const tipo = a.tipo||'otro';
       const tiempo = a.timestamp ? tiempoRel(a.timestamp.toDate()) : 'Ahora';
-      return '<div class="alerta-card nueva" onclick="_abrirDetalle(''+a.id+'')">' +
+      return '<div class="alerta-card nueva" onclick="_abrirDetalle(&quot;'+a.id+'&quot;)">' +
         '<div class="alerta-top">' +
         '<div class="alerta-icon '+CLASES[tipo]+'">'+ICONOS[tipo]+'</div>' +
         '<div class="alerta-info">' +
@@ -892,7 +892,7 @@ input,select,textarea{font-size:16px!important;}
       const tipo = a.tipo||'otro';
       const r = a.reporte||{};
       const tiempo = a.timestamp ? tiempoRel(a.timestamp.toDate()) : '';
-      return '<div class="alerta-card cerrada" onclick="_abrirDetalle(''+a.id+'')">' +
+      return '<div class="alerta-card cerrada" onclick="_abrirDetalle(&quot;'+a.id+'&quot;)">' +
         '<div class="alerta-top">' +
         '<div class="alerta-icon '+CLASES[tipo]+'">'+ICONOS[tipo]+'</div>' +
         '<div class="alerta-info">' +
@@ -1380,12 +1380,12 @@ function irPaso2() {
 
 function cntRow(lbl, key, def) {
   _detallesData[key] = def;
-  return '<div class="cnt-row"><span class="cnt-lbl">'+lbl+'</span><div class="cnt-ctrl"><button class="cnt-btn" onclick="cambiarCnt(''+key+'',-1)">−</button><span class="cnt-val" id="cnt-'+key+'">'+def+'</span><button class="cnt-btn" onclick="cambiarCnt(''+key+'',1)">+</button></div></div>';
+  return '<div class="cnt-row"><span class="cnt-lbl">'+lbl+'</span><div class="cnt-ctrl"><button class="cnt-btn" onclick="cambiarCnt(&quot;'+key+'&quot;,-1)">−</button><span class="cnt-val" id="cnt-'+key+'">'+def+'</span><button class="cnt-btn" onclick="cambiarCnt(&quot;'+key+'&quot;,1)">+</button></div></div>';
 }
 
 function toggleRow(lbl, key, defOn) {
   _detallesData[key] = defOn||false;
-  return '<div class="toggle-row"><span class="toggle-lbl">'+lbl+'</span><div class="toggle-btn'+(defOn?' on':'')+'" id="tog-'+key+'" onclick="cambiarToggle(''+key+'')"><div class="toggle-knob"></div></div></div>';
+  return '<div class="toggle-row"><span class="toggle-lbl">'+lbl+'</span><div class="toggle-btn'+(defOn?' on':'')+'" id="tog-'+key+'" onclick="cambiarToggle(&quot;'+key+'&quot;)"><div class="toggle-knob"></div></div></div>';
 }
 
 function cambiarCnt(key, delta) {
