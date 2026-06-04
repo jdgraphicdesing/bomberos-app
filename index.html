@@ -107,7 +107,7 @@ input,select,textarea{font-size:16px!important;}
   display:flex;align-items:center;gap:5px;
 }
 .online-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pls 1.5s infinite;}
-@keyframes pls{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes pls{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(0.7)}}
 .online-pill span{font-size:11px;color:#fff;}
 
 /* ===== STATS ===== */
@@ -823,6 +823,10 @@ input,select,textarea{font-size:16px!important;}
       });
       ['paso1','paso2','paso3'].forEach(p=>document.getElementById(p).style.display='none');
       document.getElementById('success-view').style.display='block';
+      const p3 = document.getElementById('p3');
+      if (p3) { p3.className='paso-num done'; p3.textContent='✓'; }
+      const ln2 = document.getElementById('ln2');
+      if (ln2) ln2.className='paso-line done';
       toast('✅ Alerta enviada a los bomberos','ok');
     } catch(e) {
       toast('❌ Error al enviar. Intenta de nuevo.','err');
